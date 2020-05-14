@@ -117,6 +117,8 @@ class grid {
   // Algorithm 3.1
   extendOrder() {
     for( let i = 0; i < this.height; ++i ) for( let j = 0; j < this.width; ++j ) if( this.orders[i][j] == null ) {
+      const Mj = this.height+this.width-i-j;
+      this.orders[i][j] = new totalOrder((new Array(Mj)).fill(-1));
       let pj = { i: i, j: j, order: this.orders[i][j] };
       let P1 = [];
       let P2 = [];
@@ -125,7 +127,7 @@ class grid {
         (this.pointCompare( p, pj ) ? P1 : P2).push( p );
       } );
 
-      //console.log( P1 );
+      console.log( P1 );
       //console.log( P2 );
 
       // alpha[i] = \alpha_{i, j}
@@ -143,8 +145,6 @@ class grid {
       let D = new Set([]);
       for( let k = i+j+2; k <= this.hegiht+this.width-1; ++k )
         D.add( k-1 );
-
-      const Mj = pj.length;
 
       let L = new Set([]);
       let LMap = {};
@@ -205,7 +205,7 @@ class grid {
           pj.order.p[k] = l;
           a = l;
 
-          D = D.filter( x => x !== l );
+          D.delete(l);
 
           break;
         }
@@ -222,7 +222,8 @@ class grid {
         } );
       }
 
-      P.push( pj );
+      pj.order.buildIp();
+      this.P.push( pj );
     }
   }
 }

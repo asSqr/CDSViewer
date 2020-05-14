@@ -6,6 +6,11 @@ class totalOrder {
     ps.forEach( (pi, idx) => this.ip[pi] = idx );
   }
 
+  buildIp() {
+    this.ip = new Array( ps.length ).fill( null );
+    ps.forEach( (pi, idx) => this.ip[pi] = idx );
+  }
+
   filter( pred ) {
     let nps = [];
 
