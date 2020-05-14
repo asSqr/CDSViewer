@@ -9,10 +9,25 @@ class totalOrder {
   filter( pred ) {
     let nps = [];
 
-    for( let i = 0; i < this.p.length; ++i ) if( pred(this.p[i]) )
+    for( let i = 0; i < this.p.length; ++i ) if( pred(this.p[i],i) )
       nps.push( this.p[i] );
 
     return new totalOrder(nps);
+  }
+
+  // <-(k)
+  smaller( k ) {
+    return this.filter( (_, i) => i < k );
+  }
+
+  // (k)
+  equal( k ) {
+    return this.p[k];
+  }
+
+  // ->(k)
+  larger( k ) {
+    return this.filter( (_, i) => i > k );
   }
 
   length() {

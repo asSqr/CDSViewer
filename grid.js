@@ -58,12 +58,12 @@ class grid {
     //console.log( p );
     //console.log( q );
 
-    p.order = p.order.filter( v => p.i+p.j+2-1 <= v && v < this.width+this.height+2-1 );
+    p.order = p.order.filter( v => p.i+p.j+2-1 <= v && v < this.width+this.height-1 );
 
     let qOrderMap = {};
 
     let qI = [];
-    for( let i = q.i+q.j+2; i < this.width+this.height+2; ++i ) {
+    for( let i = q.i+q.j+2; i < this.width+this.height; ++i ) {
       qI.push( i-1 );
     }
 
@@ -72,13 +72,16 @@ class grid {
     let contLines = [];
     let cnt = 0;
 
-    console.log( p );
+    /*console.log( p );
     console.log( q );
-    console.log( p.order.length() );
+    console.log( p.order );
     console.log( qI );
-    console.log( base );
+    console.log( base );*/
 
     let len = p.order.length();
+
+    if( base == 0 )
+      contLines.push( 0 );
 
     for( let i = 0; i <= len; ++i ) {
       const k = i-base+1;
@@ -105,6 +108,9 @@ class grid {
     p = pC;
     q = qC;
 
+    if( contLines.length == 0 )
+      console.error( "Error!! could not find contracting line" );
+
     return contLines;
   }
 
@@ -129,17 +135,94 @@ class grid {
         alpha[idx] = this.findContractingLine( pi, pj );
       } );
 
+      // beta[l] = \beta_{l, j}
+      let beta = (new Array( P2.length + 10 )).fill(0);
+
       console.log( alpha );
 
-      let D = [];
+      let D = new Set([]);
       for( let k = i+j+2; k <= this.hegiht+this.width-1; ++k )
-        D.push( k );
+        D.add( k-1 );
 
       const Mj = pj.length;
 
-      for( let k = 0; k < Mj; ++k ) {
+      let L = new Set([]);
+      let LMap = {};
 
+      for( let k = 0; k < Mj; ++k ) {
+        if( P1.length == 0 )
+        {
+          L = D;
+        }
+        else
+        {
+          P1.forEach( ( pi, idx ) => {
+            if( k < alpha[idx] )
+            {
+              LMap[idx] = D.intersection( new Set(pi.order.smaller(k).p) );
+            }
+            else if( k > alpha[idx] )
+            {
+              if( pi.order.equal(k) in D )
+                LMap[idx] = new Set([pi.order.equal(k)]);
+              else
+                LMap[idx] = new Set(pi.order.larger(k).p);
+            }
+          } );
+
+          let fst = true;
+
+          for( let l in LMap )
+          {
+            if( fst )
+            {
+              L = LMap[l];
+
+              fst = false;
+            }
+            else
+              L.intersection( LMap[l] );
+          }
+        }
+        
+        // line 18
+        P2.forEach( (pl, idx) => {
+          if( k < beta[idx] )
+          {
+            if( pl.equal(k) != undefined && pl.equal(k) in D )
+              L = new Set([pl.equal(k)]);
+            else
+            {
+              // the count test
+            }
+          }
+        } );
+
+        let a;
+
+        for( let l of L )
+        {
+          pj.order.p[k] = l;
+          a = l;
+
+          D = D.filter( x => x !== l );
+
+          break;
+        }
+
+        // line 25
+        P2.forEach( (pl, idx) => {
+          if( a in pl.order.p && k <= beta[idx] )
+          {
+            let x = pl.order.ip[a];
+
+            if( x > beta[idx] )
+              beta[idx] = x+1;
+          }
+        } );
       }
+
+      P.push( pj );
     }
   }
 }
