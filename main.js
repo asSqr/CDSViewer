@@ -7,10 +7,17 @@ document.onkeydown = event => {
 
 grid = new grid( 4, 4 );
 
-let ps = [];
+let used = [];
 
-for( let i = 2; i < 4+4; ++i )
-  ps.push( i );
+for( let i = 0; i < 4+4-2; ++i )
+  used.push( false );
+
+let cnt = 0;
+
+let ps = [4,2,3,7,5,6];
+
+//for( let i = 2; i < 4+4; ++i )
+  //ps.push( i );
 
 let ord = new totalOrder( ps );
 
