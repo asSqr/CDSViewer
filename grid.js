@@ -21,9 +21,11 @@ class grid {
   }
 
   // 1-indexed
-  setOrder( i, j, order ) {
+  setOrder( i, j, order, upd = true ) {
     this.orders[i-1][j-1] = order;
-    this.P.push( { i: i, j: j, order: order } );
+    
+    if( upd )
+      this.P.push( { i: i, j: j, order: order } );
   }
 
   // \mathcal{O} ordering
@@ -130,7 +132,7 @@ class grid {
   extendOrder() {
     for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) if( this.getOrder(i,j) == null ) {
       const Mj = this.height+this.width-i-j;
-      this.setOrder( i, j, new totalOrder((new Array(Mj)).fill(-1)) );
+      this.setOrder( i, j, new totalOrder((new Array(Mj)).fill(-1)), false );
       let pj = { i: i, j: j, order: this.getOrder( i, j ) };
       let P1 = [];
       let P2 = [];
@@ -303,7 +305,7 @@ class grid {
       }
 
       pj.order.buildIp();
-      this.P.push( pj );
+      //this.P.push( pj );
     }
   }
 }
