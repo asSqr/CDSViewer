@@ -109,7 +109,13 @@ class grid {
     q = qC;
 
     if( contLines.length == 0 )
+    {
       console.error( "Error!! could not find contracting line" );
+      console.error( p );
+      console.error( p.order.p );
+      console.error( q );
+      console.error( q.order.p );
+    }
 
     return contLines;
   }
@@ -187,18 +193,59 @@ class grid {
         
         // line 18
         P2.forEach( (pl, idx) => {
-          if( k < beta[idx] )
+          if( k <= beta[idx] )
           {
-            if( pl.equal(k) != undefined && pl.equal(k) in D )
-              L = new Set([pl.equal(k)]);
+            if( pl.order.equal(k) != undefined && pl.order.equal(k) in D )
+              L = new Set([pl.order.equal(k)]);
             else
             {
-              // the count test
+              let nL = new Set([]);
+
+              for( let l of L )
+              {
+                // the count test
+                if( (lambda => {
+                  if( !(lambda in pl.order.p) )
+                    return false;
+
+                  const a = pl.order.ip[lambda]-k;
+
+                  const ps = P.filter( p => {
+                    if( !(lambda in p.order.p) )
+                      return false;
+
+                    let idx = p.order.ip[lambda];
+
+                    return k <= idx && idx < k+a;
+                  } );
+
+                  const Dk = D.filter( d => {
+                    return ps.every( p => k <= p.order.ip[d] && p.order.ip[d] <= k+a );
+                  } );
+
+                  return Dk.length <= a;
+                })( l ) ) {
+                  nL.add( l );
+                }
+              }
+
+              L = nL;
             }
           }
         } );
 
         let a;
+
+        console.log( "L is: " );
+        console.log( L );
+
+        if( L.size == 0 )
+        {
+          console.error( "Error!! L is empty." );
+          console.error( pj );
+          console.error( k );
+          console.error( beta );
+        }
 
         for( let l of L )
         {

@@ -5,7 +5,7 @@ document.onkeydown = event => {
     fl ^= true;
 }
 
-grid = new grid( 16, 16 );
+grid = new grid( 4, 4 );
 
 let ps = [];
 
