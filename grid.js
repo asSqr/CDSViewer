@@ -9,6 +9,9 @@ class grid {
     this.dx = [ 1, 0, -1, 0 ];
     this.dy = [ 0, 1, 0, -1 ];
     this.P = [];
+
+    this.ptr = 0;
+    this.endPoints = [];
   }
 
   safe( i, j ) {
@@ -36,23 +39,98 @@ class grid {
     return p.j < q.j;
   }
 
+  getPos( i, j ) {
+    i = i-1;
+    j = j-1;
+    const size = Math.min( this.w, this.h );
+    i = this.height-1-i;
+
+    return { x: this.x+size/(this.width-1)*j, y: this.y+size/(this.height-1)*i };
+  }
+
   render( ctx, x, y, w, h ) {
-    const getPos = ( i, j ) => {
-      const size = Math.min( w, h );
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    this.h = h;
 
-      return { x: x+size/(this.width-1)*j, y: y+size/(this.height-1)*i };
-    };
-
-    for( let i = 0; i < this.height; ++i ) for( let j = 0; j < this.width; ++j ) {
-      const cp = getPos( i, j );
+    for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) {
+      const cp = this.getPos( i, j );
       
       ctx.fillStyle = 'rgb(40,40,40)';
       R.circle( ctx, cp.x, cp.y, 5, true );
     }
   }
 
-  keyHandler() {
+  renderCDS( ctx ) {
+    if( this.endPoints.length == 2 ) {
+      let ci = this.endPoints[0].i, cj = this.endPoints[0].j;
+      let gi = this.endPoints[1].i, gj = this.endPoints[1].j;
 
+      let ord = this.getOrder( ci, cj ).p.filter( v => ci+cj <= v && v < gi+gj );
+      let horizontalFlags = {};
+
+      ord.forEach( (v, i) => horizontalFlags[v] = (i < gj-cj) );
+
+      let cnt = 0;
+
+      const drawLine = ( fi, fj, ti, tj ) => {
+        const cCp = this.getPos(fi,fj), nCp = this.getPos(ti,tj);
+
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgb(40,40,40)';
+        R.line( ctx, cCp.x, cCp.y, nCp.x, nCp.y );
+      };
+
+      while( ci != gi && cj != gj ) {
+        let ni, nj;
+
+        if( horizontalFlags[ci+cj] ) {
+          ni = ci, nj = cj+1;
+
+          drawLine(ci,cj,ni,nj);
+        }
+        else {
+          ni = ci+1, nj = cj;
+
+          drawLine(ci,cj,ni,nj);
+        }
+
+        ci = ni;
+        cj = nj;
+
+        ++cnt;
+
+        if( cnt >= 50 )
+          break;
+      }
+
+      drawLine(ci,cj,gi,gj);
+    }
+  }
+
+  keyHandler() {
+    
+  }
+
+  setMousePos( x, y ) {
+    this.mouseX = x;
+    this.mouseY = y;
+  }
+
+  mouseButtonHandler() {
+    for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) {
+      const cp = this.getPos( i, j );
+      
+      if( Math.sqrt((cp.x-this.mouseX)*(cp.x-this.mouseX)+(cp.y-this.mouseY)*(cp.y-this.mouseY)) <= 10.0 ) {
+        this.endPoints[this.ptr] = { i: i, j: j, cp: cp };
+        this.ptr = (this.ptr+1)%2;
+
+        if( this.ptr == 0 && !(this.endPoints[0].i <= this.endPoints[1].i && this.endPoints[0].j <= this.endPoints[1].j) ) {
+          this.endPoints = [];
+        }
+      }
+    }
   }
 
   // p, q: { i, j, order }, return: contracting line positions

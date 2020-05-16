@@ -18,6 +18,15 @@ grid.setOrder( 1, 1, ord );
 
 grid.extendOrder();
 
+document.onmousemove = event => {
+  event = event || window.event;
+  grid.setMousePos( event.clientX, event.clientY );
+}
+
+document.onmousedown = event => {
+  grid.mouseButtonHandler();
+}
+
 function render()
 {
   let cvs = document.getElementById('canvas');
@@ -28,6 +37,8 @@ function render()
   ctx.clearRect( 0, 0, w, h );
 
   grid.render( ctx, w/2-(h-20)/2, 10, h-20, h-20 );
+  grid.renderCDS( ctx );
+  grid.keyHandler();
 }
 
 setInterval( render, 1000/60 );
