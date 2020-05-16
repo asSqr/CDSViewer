@@ -9,12 +9,12 @@ grid = new grid( 4, 4 );
 
 let ps = [];
 
-for( let i = 0; i < 100; ++i )
+for( let i = 1; i < 100; ++i )
   ps.push( i );
 
 let ord = new totalOrder( ps );
 
-grid.setOrder( 0, 0, ord );
+grid.setOrder( 1, 1, ord );
 
 grid.extendOrder();
 

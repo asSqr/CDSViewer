@@ -15,8 +15,14 @@ class grid {
     return i >= 0 && i < this.height && j >= 0 && j < this.width;
   }
 
+  // 1-indexed
+  getOrder( i, j ) {
+    return this.orders[i-1][j-1];
+  }
+
+  // 1-indexed
   setOrder( i, j, order ) {
-    this.orders[i][j] = order;
+    this.orders[i-1][j-1] = order;
     this.P.push( { i: i, j: j, order: order } );
   }
 
@@ -58,13 +64,13 @@ class grid {
     //console.log( p );
     //console.log( q );
 
-    p.order = p.order.filter( v => p.i+p.j+2-1 <= v && v < this.width+this.height-1 );
+    p.order = p.order.filter( v => p.i+p.j <= v && v < this.width+this.height );
 
     let qOrderMap = {};
 
     let qI = [];
-    for( let i = q.i+q.j+2; i < this.width+this.height; ++i ) {
-      qI.push( i-1 );
+    for( let i = q.i+q.j; i < this.width+this.height; ++i ) {
+      qI.push( i );
     }
 
     qI.map( order => qOrderMap[order] = true );
@@ -98,10 +104,10 @@ class grid {
       if( i == p.length )
         break;
 
-      layoutView[0].push( p.order[i] );
+      layoutView[0].push( p.order[i+1] );
       //layoutView[1].push( i >= base ? q.order[i-base] : null );
     
-      if( qOrderMap[p.order[i]] )
+      if( qOrderMap[p.order[i+1]] )
         ++cnt;
     }
 
@@ -122,10 +128,10 @@ class grid {
 
   // Algorithm 3.1
   extendOrder() {
-    for( let i = 0; i < this.height; ++i ) for( let j = 0; j < this.width; ++j ) if( this.orders[i][j] == null ) {
+    for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) if( this.getOrder(i,j) == null ) {
       const Mj = this.height+this.width-i-j;
-      this.orders[i][j] = new totalOrder((new Array(Mj)).fill(-1));
-      let pj = { i: i, j: j, order: this.orders[i][j] };
+      this.setOrder( i, j, new totalOrder((new Array(Mj)).fill(-1)) );
+      let pj = { i: i, j: j, order: this.getOrder( i, j ) };
       let P1 = [];
       let P2 = [];
 
@@ -147,15 +153,16 @@ class grid {
       let beta = (new Array( P2.length + 10 )).fill(0);
 
       console.log( alpha );
+      console.log( beta );
 
       let D = new Set([]);
-      for( let k = i+j+2; k <= this.hegiht+this.width-1; ++k )
-        D.add( k-1 );
+      for( let k = i+j; k < this.height+this.width; ++k )
+        D.add( k );
 
       let L = new Set([]);
       let LMap = {};
 
-      for( let k = 0; k < Mj; ++k ) {
+      for( let k = 1; k <= Mj; ++k ) {
         if( P1.length == 0 )
         {
           L = D;
@@ -163,16 +170,32 @@ class grid {
         else
         {
           P1.forEach( ( pi, idx ) => {
-            if( k < alpha[idx] )
+            const base = pj.j-pi.j;
+
+            if( k <= alpha[idx] )
             {
-              LMap[idx] = D.intersection( new Set(pi.order.smaller(k).p) );
+              console.log( "intersection" );
+              console.log(pi);
+              console.log(base);
+              console.log(pi.order.smaller(base+k).p);
+              console.log(D);
+
+              LMap[idx] = D.intersection( new Set(pi.order.smaller(base+k)) );
             }
             else if( k > alpha[idx] )
             {
-              if( pi.order.equal(k) in D )
-                LMap[idx] = new Set([pi.order.equal(k)]);
-              else
-                LMap[idx] = new Set(pi.order.larger(k).p);
+              console.log("equal");
+              console.log(pi);
+              console.log(base);
+              console.log(pi.order.equal(base+k));
+              console.log(D);
+
+              if( D.has( pi.order.equal(base+k) ) )
+                LMap[idx] = new Set([pi.order.equal(base+k)]), console.log("in D");
+              else {
+                console.log(pi);
+                LMap[idx] = new Set(pi.order.larger(base+k)), console.log("not in D");
+              }
             }
           } );
 
@@ -187,19 +210,24 @@ class grid {
               fst = false;
             }
             else
-              L.intersection( LMap[l] );
+              L = L.intersection( LMap[l] );
           }
         }
+
+        console.log( "before L is: " );
+        console.log( L );
         
         // line 18
         P2.forEach( (pl, idx) => {
           if( k <= beta[idx] )
           {
-            if( pl.order.equal(k) != undefined && pl.order.equal(k) in D )
+            if( pl.order.equal(k) && D.has( pl.order.equal(k) ) )
               L = new Set([pl.order.equal(k)]);
             else
             {
               let nL = new Set([]);
+
+              console.log("count test");
 
               for( let l of L )
               {
@@ -210,7 +238,7 @@ class grid {
 
                   const a = pl.order.ip[lambda]-k;
 
-                  const ps = P.filter( p => {
+                  const ps = this.P.filter( p => {
                     if( !(lambda in p.order.p) )
                       return false;
 
@@ -219,9 +247,9 @@ class grid {
                     return k <= idx && idx < k+a;
                   } );
 
-                  const Dk = D.filter( d => {
-                    return ps.every( p => k <= p.order.ip[d] && p.order.ip[d] <= k+a );
-                  } );
+                  let Dk = new Set([]);
+                  for( let d of D ) if( ps.every( p => k <= p.order.ip[d] && p.order.ip[d] <= k+a ) )
+                    Dk.add( d );
 
                   return Dk.length <= a;
                 })( l ) ) {
@@ -238,6 +266,8 @@ class grid {
 
         console.log( "L is: " );
         console.log( L );
+        console.log( "k is: ");
+        console.log( k );
 
         if( L.size == 0 )
         {
@@ -267,6 +297,9 @@ class grid {
               beta[idx] = x+1;
           }
         } );
+
+        console.log( "beta" );
+        console.log( beta );
       }
 
       pj.order.buildIp();

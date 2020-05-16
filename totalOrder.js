@@ -1,20 +1,29 @@
 class totalOrder {
+  // 1-indexed
   constructor( ps ) {
-    this.p = ps;
+    let nps = [].concat(ps);
+    nps.unshift(null);
+    this.p = nps;
 
-    this.ip = new Array( ps.length ).fill( null );
-    ps.forEach( (pi, idx) => this.ip[pi] = idx );
+    this.ip = {};
+    ps.map( (pi, idx) => {
+      if( pi != null )
+        this.ip[pi] = idx;
+    } );
   }
 
   buildIp() {
-    this.ip = new Array( ps.length ).fill( null );
-    ps.forEach( (pi, idx) => this.ip[pi] = idx );
+    this.ip = {};
+    ps.map( (pi, idx) => {
+      if( pi != null )
+        this.ip[pi] = idx;
+    } );
   }
 
   filter( pred ) {
     let nps = [];
 
-    for( let i = 0; i < this.p.length; ++i ) if( pred(this.p[i],i) )
+    for( let i = 0; i < this.p.length; ++i ) if( this.p[i] != null && pred(this.p[i],i) )
       nps.push( this.p[i] );
 
     return new totalOrder(nps);
@@ -22,7 +31,7 @@ class totalOrder {
 
   // <-(k)
   smaller( k ) {
-    return this.filter( (_, i) => i < k );
+    return this.filter( (x, i) => i < k && x != null ).p.filter( x => x != null );
   }
 
   // (k)
@@ -32,7 +41,7 @@ class totalOrder {
 
   // ->(k)
   larger( k ) {
-    return this.filter( (_, i) => i > k );
+    return this.filter( (x, i) => i > k && x != null ).p.filter( x => x != null );
   }
 
   length() {
