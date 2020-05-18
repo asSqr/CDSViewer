@@ -41,3 +41,40 @@ Set.prototype.isSubset = function(superset) {
     }
     return true;
 }
+
+Set.prototype.deleteElement = function(x) {
+    let ret = new Set([]);
+
+    for( let v of this ) if( v != x ) {
+        ret.add( v );
+    }
+
+    return ret;
+}
+
+Set.prototype.eqSet = (bs) => {
+    if (this.size !== bs.size) return false;
+    for (var a of this) if (!bs.has(a)) return false;
+    return true;
+}
+
+function isArray (item) {
+    return Object.prototype.toString.call(item) === '[object Array]';
+}
+
+function isObject (item) {
+    return typeof item === 'object' && item !== null && !isArray(item);
+}
+
+const deepClone = obj => {
+    let r = {}
+    for(var name in obj){
+        console.log(obj[name])
+        if(isObject(obj[name])){
+            r[name] = deepClone(obj[name])
+        }else{
+            r[name] = obj[name]
+        }
+    }
+    return r
+}

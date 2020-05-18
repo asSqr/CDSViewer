@@ -1,12 +1,19 @@
 class totalOrder {
   // 1-indexed
   constructor( ps ) {
+    if( ps.every( v => v == -1 ) ) {
+      this.p = [null].concat(ps);
+      this.ip = {};
+
+      return;
+    }
+
     let nps = [].concat(ps);
     nps.unshift(null);
     this.p = nps;
 
     this.ip = {};
-    ps.map( (pi, idx) => {
+    this.p.map( (pi, idx) => {
       if( pi != null )
         this.ip[pi] = idx;
     } );
@@ -14,7 +21,7 @@ class totalOrder {
 
   buildIp() {
     this.ip = {};
-    ps.map( (pi, idx) => {
+    this.p.map( (pi, idx) => {
       if( pi != null )
         this.ip[pi] = idx;
     } );
@@ -31,7 +38,7 @@ class totalOrder {
 
   // <-(k)
   smaller( k ) {
-    return this.filter( (x, i) => i < k && x != null ).p.filter( x => x != null );
+    return this.filter( (x, i) => i <= k && x != null ).p.filter( x => x != null );
   }
 
   // (k)
@@ -41,7 +48,7 @@ class totalOrder {
 
   // ->(k)
   larger( k ) {
-    return this.filter( (x, i) => i > k && x != null ).p.filter( x => x != null );
+    return this.filter( (x, i) => i >= k && x != null ).p.filter( x => x != null );
   }
 
   length() {

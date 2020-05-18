@@ -3,8 +3,15 @@ class grid {
     this.width = width;
     this.height = height;
 
-    this.orders = (new Array( this.height )).fill( null );
-    this.orders.forEach( (_, i) => this.orders[i] = (new Array( this.width )).fill( null ) );
+    this.orders = {};
+    this.used = {};
+
+    for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) {
+      this.orders[i+","+j] = new totalOrder( (new Array(this.width+this.height-i-j)).fill(-1) );
+      this.used[i+","+j] = false;
+    }
+
+    console.log(this.orders);
 
     this.dx = [ 1, 0, -1, 0 ];
     this.dy = [ 0, 1, 0, -1 ];
@@ -20,15 +27,17 @@ class grid {
 
   // 1-indexed
   getOrder( i, j ) {
-    return this.orders[i-1][j-1];
+    return this.orders[i+","+j];
   }
 
   // 1-indexed
-  setOrder( i, j, order, upd = true ) {
-    this.orders[i-1][j-1] = order;
+  setOrder( i, j, argOrder, upd = true ) {
+    this.orders[i+","+j] = argOrder;
     
     if( upd )
-      this.P.push( { i: i, j: j, order: order } );
+      this.P.push( { i: i, j: j, order: argOrder } );
+
+    this.used[i+","+j] = true;
   }
 
   // \mathcal{O} ordering
@@ -138,13 +147,11 @@ class grid {
     const base = q.j-p.j;
 
     let layoutView = new Array(2).fill([]);
-    let pC = p;
-    let qC = q;
     
-    //console.log( p );
-    //console.log( q );
+    console.log( p );
+    console.log( q );
 
-    p.order = p.order.filter( v => p.i+p.j <= v && v < this.width+this.height );
+    const pOrder = p.order.filter( v => p.i+p.j <= v && v < this.width+this.height );
 
     let qOrderMap = {};
 
@@ -177,6 +184,9 @@ class grid {
       //console.log(k);
       //console.log(cnt);
 
+      if( qOrderMap[pOrder[i+1]] )
+        ++cnt;
+
       if( k == cnt ) {
         contLines.push( k );
       }
@@ -184,19 +194,13 @@ class grid {
       if( i == p.length )
         break;
 
-      layoutView[0].push( p.order[i+1] );
+      layoutView[0].push( pOrder[i+1] );
       //layoutView[1].push( i >= base ? q.order[i-base] : null );
-    
-      if( qOrderMap[p.order[i+1]] )
-        ++cnt;
     }
-
-    p = pC;
-    q = qC;
 
     if( contLines.length == 0 )
     {
-      console.error( "Error!! could not find contracting line" );
+      console.error( "Error!!! could not find contracting line." );
       console.error( p );
       console.error( p.order.p );
       console.error( q );
@@ -208,9 +212,15 @@ class grid {
 
   // Algorithm 3.1
   extendOrder() {
-    for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) if( this.getOrder(i,j) == null ) {
+    console.log(this);
+
+    for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) if( !this.used[i+","+j] ) {
       const Mj = this.height+this.width-i-j;
-      this.setOrder( i, j, new totalOrder((new Array(Mj)).fill(-1)), false );
+      this.used[i+","+j] = true;
+      console.log(this.orders);
+      console.log( "i: "+i+" j: "+j );
+      console.log("Initialization");
+      console.log( this.getOrder(i,j) );
       let pj = { i: i, j: j, order: this.getOrder( i, j ) };
       let P1 = [];
       let P2 = [];
@@ -219,8 +229,10 @@ class grid {
         (this.pointCompare( p, pj ) ? P1 : P2).push( p );
       } );
 
+      console.log( "P1: " );
       console.log( P1 );
-      //console.log( P2 );
+      console.log( "P2: " );
+      console.log( P2 );
 
       // alpha[i] = \alpha_{i, j}
       let alpha = new Array( P1.length + 10 );
@@ -232,6 +244,7 @@ class grid {
       // beta[l] = \beta_{l, j}
       let beta = (new Array( P2.length + 10 )).fill(0);
 
+      console.log("alpha");
       console.log( alpha );
       console.log( beta );
 
@@ -257,24 +270,43 @@ class grid {
               console.log( "intersection" );
               console.log(pi);
               console.log(base);
-              console.log(pi.order.smaller(base+k).p);
+              console.log(pi.order.smaller(k).p);
               console.log(D);
 
-              LMap[idx] = D.intersection( new Set(pi.order.smaller(base+k)) );
+              LMap[idx] = D.intersection( new Set(pi.order.smaller(k)) );
+
+              // subset property check
+              for( let key in LMap ) {
+                if( !LMap[key].isSubset( LMap[idx] ) && !LMap[idx].isSubset( LMap[key] ) ) {
+                  console.error( "Error!!! Subset Property of Left Sets is violated." );
+                }
+              }
             }
             else if( k > alpha[idx] )
             {
               console.log("equal");
               console.log(pi);
               console.log(base);
-              console.log(pi.order.equal(base+k));
+              console.log(pi.order.equal(k));
               console.log(D);
 
-              if( D.has( pi.order.equal(base+k) ) )
-                LMap[idx] = new Set([pi.order.equal(base+k)]), console.log("in D");
+              const largerList = pi.order.larger(k).filter( v => i+j <= v && v < this.height+this.width );
+
+              // Not Left Sets Property Check
+              if( D.eqSet( new Set(largerList) ) ) {
+                console.error( "Error!!! Property of Not Left Sets is violated." );
+                console.error( largerList );
+                console.error( D );
+                console.error( pj );
+                console.error( k );
+                console.error(pi.order);
+              }
+
+              if( D.has( pi.order.equal(k) ) )
+                LMap[idx] = new Set([pi.order.equal(k)]), console.log("in D");
               else {
                 console.log(pi);
-                LMap[idx] = new Set(pi.order.larger(base+k)), console.log("not in D");
+                LMap[idx] = D.intersection( new Set(largerList) ), console.log("not in D");
               }
             }
           } );
@@ -302,7 +334,14 @@ class grid {
           if( k <= beta[idx] )
           {
             if( pl.order.equal(k) && D.has( pl.order.equal(k) ) )
+            {
               L = new Set([pl.order.equal(k)]);
+
+              console.log( "D has" );  
+              console.log(pl.order.equal(k));
+              console.log( "D is:" );
+              console.log(D);
+            }
             else
             {
               let nL = new Set([]);
@@ -317,6 +356,8 @@ class grid {
                     return false;
 
                   const a = pl.order.ip[lambda]-k;
+
+                  console.log( `a: ${a}` );
 
                   const ps = this.P.filter( p => {
                     if( !(lambda in p.order.p) )
@@ -362,16 +403,28 @@ class grid {
           pj.order.p[k] = l;
           a = l;
 
+          //console.error( "Delete from D: "+l );
+
           D.delete(l);
 
           break;
         }
 
+        console.log(`a is: ${a}`);
+
         // line 25
         P2.forEach( (pl, idx) => {
+          console.log( "pl order p" );
+          console.log(pl.order.p);
+          console.log(a in pl.order.p);
+
           if( a in pl.order.p && k <= beta[idx] )
           {
+            pl.order.buildIp();
             let x = pl.order.ip[a];
+
+            console.log( `x is: ${x}` );
+            console.log( pl.order.ip );
 
             if( x > beta[idx] )
               beta[idx] = x+1;
@@ -382,7 +435,7 @@ class grid {
         console.log( beta );
       }
 
-      pj.order.buildIp();
+      this.getOrder( i, j ).buildIp();
       //this.P.push( pj );
     }
   }
