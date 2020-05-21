@@ -5,12 +5,21 @@ document.onkeydown = event => {
     fl ^= true;
 }
 
-grid = new grid( 6, 6 );
+const n = 3;
+let nFact = 1;
 
-const permutations = CorbettRotator(3);
+for( let i = 1; i <= n; ++i )
+  nFact *= i;
 
-for( let k = 1; k <= 6; ++k ){
-  grid.setOrder( k, 6+1-k, permutations[k-1] );
+grid = new grid( nFact, nFact );
+
+const permutations = CorbettRotator(n);
+
+for( let k = 1; k <= nFact; ++k ){
+  for( let i = n+1; i < 2*nFact; ++i )
+    permutations[k-1].push( i );
+
+  grid.setOrder( k, nFact+1-k, new totalOrder( permutations[k-1] ) );
 }
 
 /*let used = [];

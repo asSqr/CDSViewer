@@ -11,8 +11,6 @@ class grid {
       this.used[i+","+j] = false;
     }
 
-    console.log(this.orders);
-
     this.dx = [ 1, 0, -1, 0 ];
     this.dy = [ 0, 1, 0, -1 ];
     this.P = [];
@@ -76,7 +74,7 @@ class grid {
       let ci = this.endPoints[0].i, cj = this.endPoints[0].j;
       let gi = this.endPoints[1].i, gj = this.endPoints[1].j;
 
-      let ord = this.getOrder( ci, cj ).p.filter( v => ci+cj <= v && v < gi+gj );
+      let ord = this.getOrder( ci, cj ).p/*.filter( v => ci+cj <= v && v < gi+gj )*/;
       let horizontalFlags = {};
 
       ord.forEach( (v, i) => horizontalFlags[v] = (i < gj-cj) );
@@ -173,7 +171,7 @@ class grid {
 
     let len = p.order.length();
 
-    if( base == 0 )
+    if( base <= 0 )
       contLines.push( 0 );
 
     for( let i = 0; i <= len; ++i ) {
@@ -242,7 +240,7 @@ class grid {
       } );
 
       // beta[l] = \beta_{l, j}
-      let beta = (new Array( P2.length + 10 )).fill(0);
+      let beta = (new Array( P2.length + 10 )).fill(1);
 
       console.log("alpha");
       console.log( alpha );
@@ -263,7 +261,7 @@ class grid {
         else
         {
           P1.forEach( ( pi, idx ) => {
-            const base = 0;
+            const base = pj.j-pi.j;
             let equalList = -1;
 
             if( k <= alpha[idx] )
@@ -347,22 +345,32 @@ class grid {
 
         console.log( "before L is: " );
         console.log( L );
+
+        if( L.size == 0 ) {
+          console.error( "Error!!! L is empty when pi finished." );
+        }
         
         // line 18
         P2.forEach( (pl, idx) => {
-          if( k <= beta[idx] )
-          {
-            if( pl.order.equal(k) && D.has( pl.order.equal(k) ) )
-            {
-              L = new Set([pl.order.equal(k)]);
+          if( k <= beta[idx] ) {
+            const base = -(pl.j-pj.j);
+
+            if( pl.order.equal(base+k) && D.has( pl.order.equal(base+k) ) ) {
+              if( !L.has( pl.order.equal(base+k) ) ) {
+                console.error( "Error!!! L is empty. pl non-emptiness violated." );
+                console.error( pl );
+                console.error( k );
+                console.error( D );
+              }
+              
+              L = new Set([pl.order.equal(base+k)]);
 
               console.log( "D has" );  
-              console.log(pl.order.equal(k));
+              console.log(pl.order.equal(base+k));
               console.log( "D is:" );
               console.log(D);
             }
-            else
-            {
+            else {
               let nL = new Set([]);
 
               console.log("count test");
@@ -374,27 +382,57 @@ class grid {
                   if( !(lambda in pl.order.p) )
                     return false;
 
-                  const a = pl.order.ip[lambda]-k;
+                  const base = pl.j > pj.j ? pl.j-pj.j : pj.j-pl.j;
+                  const sign = (pl.j > pj.j ? 1 : -1);
 
-                  console.log( `a: ${a}` );
+                  const a = pl.order.ip[lambda]+sign*base-k;
+
+                  //console.error( `count test: ${lambda}` );
+
+                  //console.error( `a: ${a}` );
+
+                  if( a <= 0 ) {
+                    console.error( pl.order.p );
+                    console.error( base );
+                    console.error( sign );
+                    console.error( pj.order.p );
+                    console.error( D );
+                    console.error( k );
+                  }
 
                   const ps = this.P.filter( p => {
+                    const base = p.j > pj.j ? p.j-pj.j : pj.j-p.j;
+
                     if( !(lambda in p.order.p) )
                       return false;
 
-                    let idx = p.order.ip[lambda];
+                    let idx = p.order.ip[lambda]+(p.j > pj.j ? 1 : -1)*base;
 
                     return k <= idx && idx < k+a;
                   } );
 
+                  //console.error(ps);
+
                   let Dk = new Set([]);
-                  for( let d of D ) if( ps.every( p => k <= p.order.ip[d] && p.order.ip[d] <= k+a ) )
+                  for( let d of D ) if( ps.every( p => {
+                      const base = p.j > pj.j ? p.j-pj.j : pj.j-p.j;
+                      const sign = (p.j > pj.j ? 1 : -1);
+
+                      return k <= p.order.ip[d]+sign*base && p.order.ip[d]+sign*base <= k+a 
+                    }) )
                     Dk.add( d );
 
-                  return Dk.length <= a;
+                  //console.error( Dk );
+
+                  return Dk.size <= a;
                 })( l ) ) {
                   nL.add( l );
                 }
+              }
+
+              if( nL.size == 0 ) {
+                console.error( "Error!!! nL is empty. [count test]");
+                console.error( L );
               }
 
               L = nL;
@@ -411,7 +449,7 @@ class grid {
 
         if( L.size == 0 )
         {
-          console.error( "Error!! L is empty." );
+          console.error( "Error!! L is empty when pl finished." );
           console.error( pj );
           console.error( k );
           console.error( beta );
@@ -422,7 +460,7 @@ class grid {
           pj.order.p[k] = l;
           a = l;
 
-          //console.error( "Delete from D: "+l );
+          console.error( "Delete from D: "+l );
 
           D.delete(l);
 
@@ -434,19 +472,21 @@ class grid {
         // line 25
         P2.forEach( (pl, idx) => {
           console.log( "pl order p" );
+          console.log( pl );
           console.log(pl.order.p);
           console.log(a in pl.order.p);
 
-          if( a in pl.order.p && k <= beta[idx] )
-          {
+          if( a in pl.order.p && k <= beta[idx] ) {
             pl.order.buildIp();
             let x = pl.order.ip[a];
 
             console.log( `x is: ${x}` );
             console.log( pl.order.ip );
 
-            if( x > beta[idx] )
+            if( x > beta[idx] ) {
               beta[idx] = x+1;
+              console.error( `beta: ${x+1}` );
+            }
           }
         } );
 
