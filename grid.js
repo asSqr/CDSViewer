@@ -151,8 +151,6 @@ class grid {
 
     const pOrder = p.order.filter( v => p.i+p.j <= v && v < this.width+this.height );
 
-    console.error( pOrder );
-
     let qOrderMap = {};
 
     let qI = [];
@@ -176,7 +174,7 @@ class grid {
     if( base <= 0 )
       contLines.push( 0 );
 
-    for( let i = 1; i <= len; ++i ) {
+    for( let i = 1; i <= len+base; ++i ) {
       const k = i-base;
 
       //console.error("Test");
@@ -187,8 +185,9 @@ class grid {
       /*console.error(k);
       console.error(cnt);
       console.error( qOrderMap );
-      console.error( p.order );
-      console.error( pOrder.p[i] );*/
+      console.error( pOrder );
+      console.error( pOrder.p[i] );
+      console.error( base );*/
 
       if( k == cnt ) {
         contLines.push( k );
@@ -223,10 +222,10 @@ class grid {
     {
       const conts = this.findContractingLine( ps[i], ps[j] );
 
-      console.error( "Comparing: " );
+      /*console.error( "Comparing: " );
       console.error( ps[i] );
       console.error( ps[j] );
-      console.error( conts );
+      console.error( conts );*/
 
       const base = ps[j].j-ps[i].j;
 
@@ -234,8 +233,8 @@ class grid {
         const psI = ps[i].order.filter( v => ps[i].i+ps[i].j <= v && v < this.width+this.height );
         const psJ = ps[j].order.filter( v => ps[j].i+ps[j].j <= v && v < this.width+this.height );
 
-        console.error( psI );
-        console.error( psJ );
+        //console.error( psI );
+        //console.error( psJ );
 
         const xs = psI.smaller( k+base ).filter( v => ps[j].i+ps[j].j <= v && v < this.width+this.height );
 
@@ -243,7 +242,7 @@ class grid {
           const kPrime = psI.ip[x]-base;
           const kPrime2 = psJ.ip[x];
 
-          return kPrime <= k ? kPrime <= kPrime2 : kPrime >= kPrime2;
+          return kPrime2 <= k ? kPrime <= kPrime2 : kPrime >= kPrime2;
         });
       });
 
@@ -302,11 +301,8 @@ class grid {
 
       for( let k = 1; k <= Mj; ++k ) {
         if( P1.length == 0 )
-        {
           L = D;
-        }
-        else
-        {
+        else {
           P1.forEach( ( pi, idx ) => {
             const base = pj.j-pi.j;
             let equalList = -1;
@@ -439,34 +435,39 @@ class grid {
               {
                 // the count test
                 if( (lambda => {
-                  if( !(lambda in pl.order.p) )
+                  const plOrder = pl.order.filter( v => pl.i+pl.j <= v && v < this.width+this.height );
+
+                  if( plOrder.p.filter( v => v == lambda ).length == 0 )
                     return false;
 
                   const base = pl.j > pj.j ? pl.j-pj.j : pj.j-pl.j;
                   const sign = (pl.j > pj.j ? 1 : -1);
 
-                  const a = pl.order.ip[lambda]+sign*base-k;
-
-                  //console.error( `count test: ${lambda}` );
-
-                  //console.error( `a: ${a}` );
+                  const a = plOrder.ip[lambda]+sign*base-k;
 
                   if( a <= 0 ) {
-                    console.error( pl.order.p );
+                    console.error( `count test: ${lambda}` );
+                    console.error( `a: ${a}` );
+                    console.error( pl );
+                    console.error( plOrder.p );
                     console.error( base );
                     console.error( sign );
+                    console.error( pj );
                     console.error( pj.order.p );
                     console.error( D );
                     console.error( k );
+                    console.error( `beta[idx]: ${beta[idx]}` );
                   }
 
                   const ps = this.P.filter( p => {
                     const base = p.j > pj.j ? p.j-pj.j : pj.j-p.j;
 
-                    if( !(lambda in p.order.p) )
+                    const pOrder = p.order.filter( v => p.i+p.j <= v && v < this.width+this.height );
+
+                    if( pOrder.p.filter( v => v == lambda ).length == 0 )
                       return false;
 
-                    let idx = p.order.ip[lambda]+(p.j > pj.j ? 1 : -1)*base;
+                    let idx = pOrder.ip[lambda]+(p.j > pj.j ? 1 : -1)*base;
 
                     return k <= idx && idx < k+a;
                   } );
@@ -478,7 +479,9 @@ class grid {
                       const base = p.j > pj.j ? p.j-pj.j : pj.j-p.j;
                       const sign = (p.j > pj.j ? 1 : -1);
 
-                      return k <= p.order.ip[d]+sign*base && p.order.ip[d]+sign*base <= k+a 
+                      const pOrder = p.order.filter( v => p.i+p.j <= v && v < this.width+this.height );
+
+                      return k <= pOrder.ip[d]+sign*base && pOrder.ip[d]+sign*base <= k+a 
                     }) )
                     Dk.add( d );
 
@@ -536,7 +539,7 @@ class grid {
           console.log(pl.order.p);
           console.log(a in pl.order.p);
 
-          if( a in pl.order.p && k <= beta[idx] ) {
+          if( pl.order.p.filter( v => v == a ).length > 0 && k <= beta[idx] ) {
             pl.order.buildIp();
             let x = pl.order.ip[a];
 
