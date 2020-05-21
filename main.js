@@ -22,6 +22,9 @@ for( let k = 1; k <= nFact; ++k ){
   grid.setOrder( k, nFact+1-k, new totalOrder( permutations[k-1] ) );
 }
 
+if( !grid.contractionPropertyCheck() )
+  console.error( "Invalid Initial total order" );
+
 /*let used = [];
 
 for( let i = 0; i < 4+4-2; ++i )
@@ -37,8 +40,8 @@ let ps = [4,2,3,7,5,6];
 let ord = new totalOrder( ps );
 
 grid.setOrder( 1, 1, ord );*/
-
-grid.extendOrder();
+else
+  grid.extendOrder();
 
 document.onmousemove = event => {
   event = event || window.event;

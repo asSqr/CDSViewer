@@ -151,6 +151,8 @@ class grid {
 
     const pOrder = p.order.filter( v => p.i+p.j <= v && v < this.width+this.height );
 
+    console.error( pOrder );
+
     let qOrderMap = {};
 
     let qI = [];
@@ -169,30 +171,35 @@ class grid {
     console.log( qI );
     console.log( base );*/
 
-    let len = p.order.length();
+    let len = pOrder.length();
 
     if( base <= 0 )
       contLines.push( 0 );
 
-    for( let i = 0; i <= len; ++i ) {
-      const k = i-base+1;
+    for( let i = 1; i <= len; ++i ) {
+      const k = i-base;
 
-      //console.log("Test");
+      //console.error("Test");
 
-      //console.log(k);
-      //console.log(cnt);
-
-      if( qOrderMap[pOrder[i+1]] )
+      if( qOrderMap[pOrder.p[i]] )
         ++cnt;
+
+      /*console.error(k);
+      console.error(cnt);
+      console.error( qOrderMap );
+      console.error( p.order );
+      console.error( pOrder.p[i] );*/
 
       if( k == cnt ) {
         contLines.push( k );
+        /*console.error( "contLines" );
+        console.error( contLines );*/
       }
 
       if( i == p.length )
         break;
 
-      layoutView[0].push( pOrder[i+1] );
+      layoutView[0].push( pOrder.p[i] );
       //layoutView[1].push( i >= base ? q.order[i-base] : null );
     }
 
@@ -206,6 +213,46 @@ class grid {
     }
 
     return contLines;
+  }
+
+  contractionPropertyCheck() {
+    let ps = [].concat(this.P);
+    ps.sort( this.pointCompare );
+
+    for( let i = 0; i < ps.length; ++i ) for( let j = 0; j < i; ++j )
+    {
+      const conts = this.findContractingLine( ps[i], ps[j] );
+
+      console.error( "Comparing: " );
+      console.error( ps[i] );
+      console.error( ps[j] );
+      console.error( conts );
+
+      const base = ps[j].j-ps[i].j;
+
+      const fl = conts.some( k => {
+        const psI = ps[i].order.filter( v => ps[i].i+ps[i].j <= v && v < this.width+this.height );
+        const psJ = ps[j].order.filter( v => ps[j].i+ps[j].j <= v && v < this.width+this.height );
+
+        console.error( psI );
+        console.error( psJ );
+
+        const xs = psI.smaller( k+base ).filter( v => ps[j].i+ps[j].j <= v && v < this.width+this.height );
+
+        return xs.every( x => {
+          const kPrime = psI.ip[x]-base;
+          const kPrime2 = psJ.ip[x];
+
+          return kPrime <= k ? kPrime <= kPrime2 : kPrime >= kPrime2;
+        });
+      });
+
+      if( !fl ) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   // Algorithm 3.1
@@ -355,18 +402,31 @@ class grid {
           if( k <= beta[idx] ) {
             const base = -(pl.j-pj.j);
 
-            if( pl.order.equal(base+k) && D.has( pl.order.equal(base+k) ) ) {
-              if( !L.has( pl.order.equal(base+k) ) ) {
+            const plOrder = pl.order.filter( v => pl.i+pl.j <= v && v < this.width+this.height );
+
+            if( plOrder.equal(base+k) && D.has( plOrder.equal(base+k) ) ) {
+              if( L.size != 0 && !L.has( plOrder.equal(base+k) ) ) {
                 console.error( "Error!!! L is empty. pl non-emptiness violated." );
-                console.error( pl );
-                console.error( k );
+                console.error( L );
+                console.error( beta[idx] );
+                console.error( plOrder.p );
+                console.error( pj.order.p );
+                console.error( "k: "+k );
                 console.error( D );
+                console.error( "base: "+base );
+                console.error( pl );
+                console.error( pj );
               }
+
+              let nL = new Set([]);
               
-              L = new Set([pl.order.equal(base+k)]);
+              for( let l of L ) if( l == plOrder.equal(base+k) )
+                nL.add( l );
+
+              L = nL;
 
               console.log( "D has" );  
-              console.log(pl.order.equal(base+k));
+              console.log(plOrder.equal(base+k));
               console.log( "D is:" );
               console.log(D);
             }
@@ -460,7 +520,7 @@ class grid {
           pj.order.p[k] = l;
           a = l;
 
-          console.error( "Delete from D: "+l );
+          //console.error( "Delete from D: "+l );
 
           D.delete(l);
 
@@ -485,7 +545,7 @@ class grid {
 
             if( x > beta[idx] ) {
               beta[idx] = x+1;
-              console.error( `beta: ${x+1}` );
+              console.log( `beta: ${x+1}` );
             }
           }
         } );
