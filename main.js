@@ -5,9 +5,15 @@ document.onkeydown = event => {
     fl ^= true;
 }
 
-grid = new grid( 4, 4 );
+grid = new grid( 6, 6 );
 
-let used = [];
+const permutations = CorbettRotator(3);
+
+for( let k = 1; k <= 6; ++k ){
+  grid.setOrder( k, 6+1-k, permutations[k-1] );
+}
+
+/*let used = [];
 
 for( let i = 0; i < 4+4-2; ++i )
   used.push( false );
@@ -21,7 +27,7 @@ let ps = [4,2,3,7,5,6];
 
 let ord = new totalOrder( ps );
 
-grid.setOrder( 1, 1, ord );
+grid.setOrder( 1, 1, ord );*/
 
 grid.extendOrder();
 

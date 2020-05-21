@@ -263,17 +263,18 @@ class grid {
         else
         {
           P1.forEach( ( pi, idx ) => {
-            const base = pj.j-pi.j;
+            const base = 0;
+            let equalList = -1;
 
             if( k <= alpha[idx] )
             {
               console.log( "intersection" );
               console.log(pi);
               console.log(base);
-              console.log(pi.order.smaller(k).p);
+              console.log(pi.order.smaller(base+k).p);
               console.log(D);
 
-              LMap[idx] = D.intersection( new Set(pi.order.smaller(k)) );
+              LMap[idx] = D.intersection( new Set(pi.order.smaller(base+k)) );
 
               // subset property check
               for( let key in LMap ) {
@@ -287,10 +288,11 @@ class grid {
               console.log("equal");
               console.log(pi);
               console.log(base);
-              console.log(pi.order.equal(k));
+              console.log(pi.order.equal(base+k));
               console.log(D);
+              console.log(pj);
 
-              const largerList = pi.order.larger(k).filter( v => i+j <= v && v < this.height+this.width );
+              const largerList = pi.order.larger(base+k).filter( v => i+j <= v && v < this.height+this.width );
 
               // Not Left Sets Property Check
               if( D.eqSet( new Set(largerList) ) ) {
@@ -299,14 +301,31 @@ class grid {
                 console.error( D );
                 console.error( pj );
                 console.error( k );
-                console.error(pi.order);
+                console.error( pi.order );
               }
 
-              if( D.has( pi.order.equal(k) ) )
-                LMap[idx] = new Set([pi.order.equal(k)]), console.log("in D");
+              if( D.has( pi.order.equal(base+k) ) )
+              {
+                LMap[idx] = new Set([pi.order.equal(base+k)]), console.log("in D");
+              
+                if( equalList == -1 )
+                  equalList = pi.order.equal(base+k);
+                else if( pi.order.equal(base+k) != equalList )
+                {
+                  // Equal List is same check.
+                  console.error( "Error!!! Equal List Property is violated." );
+                }
+              }
               else {
                 console.log(pi);
                 LMap[idx] = D.intersection( new Set(largerList) ), console.log("not in D");
+              }
+
+              const smallerList = pi.order.smaller(base+k-1).filter( v => i+j <= v && v < this.height+this.width );
+
+              // smallerList is already placed check
+              if( D.intersection( new Set(smallerList) ).size != 0 ) {
+                console.error( "Error!!! smallerList violated." );
               }
             }
           } );
