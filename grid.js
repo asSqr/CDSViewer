@@ -259,6 +259,11 @@ class grid {
     logInfo(this);
 
     for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) if( !this.used[i+","+j] ) {    
+      if( i == 2 && j == 1 )
+        debug = true;
+      else
+        debug = true;
+      
       const Mj = this.height+this.width-i-j;
       this.used[i+","+j] = true;
       logInfo(this.orders);
@@ -311,7 +316,7 @@ class grid {
           P1.forEach( ( pi, idx ) => {
             const base = pj.j-pi.j;
             let equalList = -1;
-            const pIOrder = pi.order.filter( v => pj.i+pj.j <= v && v < this.height+this.width );
+            const pIOrder = pi.order.filter( v => pi.i+pi.j <= v && v < this.height+this.width );
 
             logInfo( `P1 loop: pi: ${JSON.stringify(pi)}, k: ${k}, alpha: ${alpha[idx]}, base: ${base}, pIOrder: ${JSON.stringify(pIOrder)}` );
 
@@ -356,7 +361,7 @@ class grid {
 
               // smallerList is already placed check
               if( D.intersection( new Set(smallerList) ).size != 0 ) {
-                logError( `Error!!! smallerList violated. D: ${toList(D)}, smallerList: ${JSON.stringify(smallerList)}, largerSet: ${JSON.stringify(largerList)}, base+k-1: ${base+k-1}, k: ${k}, pj: ${JSON.stringify(pj)}, pi.order: ${JSON.stringify(pi)}` );
+                logError( `Error!!! smallerList violated. D: ${toList(D)}, smallerList: ${JSON.stringify(smallerList)}, largerSet: ${JSON.stringify(largerList)}, base+k-1: ${base+k-1}, k: ${k}, pj: ${JSON.stringify(pj)}, pi.order: ${JSON.stringify(pi)}, alpha[idx]: ${alpha[idx]}` );
               }
 
               // Not Left Sets Property Check
@@ -390,7 +395,7 @@ class grid {
 
           let fst = true;
 
-          logError(`Error!!! L is empty when pi finished. LMap: ${JSON.stringify(LMap)}`);
+          //logError(`Error!!! L is empty when pi finished. LMap: ${JSON.stringify(LMap)}`);
 
           for( let l in LMap )
           {
@@ -451,7 +456,7 @@ class grid {
                   plOrder.buildIp();
 
                   if( plOrder.p.filter( v => v == lambda ).length == 0 )
-                    return false;
+                    return true;
 
                   const base = pl.j > pj.j ? pl.j-pj.j : pj.j-pl.j;
                   const sign = (pl.j > pj.j ? 1 : -1);
@@ -469,12 +474,12 @@ class grid {
                     pOrder.buildIp();
 
                     if( pOrder.p.filter( v => v == lambda ).length == 0 )
-                      return false;
+                      return true;
 
                     let idx = pOrder.ip[lambda]+(p.j > pj.j ? 1 : -1)*base;
 
                     // TODO: k+a？
-                    return k <= idx;
+                    return k <= idx && idx <= k+a;
                   } );
 
                   //logError(ps);
@@ -511,7 +516,7 @@ class grid {
               }
 
               if( nL.size == 0 ) {
-                logError( `Count Test Log: Error!!! nL is empty. L: ${toList(L)}` );
+                logError( `Count Test Log: Error!!! nL is empty. L: ${toList(L)}, pj: ${JSON.stringify(pj)}` );
               }
 
               //logError( `Count Test Log: L is ${toList(L)}` );
