@@ -15,12 +15,19 @@ grid = new grid( nFact, nFact );
 
 const permutations = CorbettRotator(n);
 
-for( let k = 1; k <= nFact; ++k ){
+/*for( let k = 1; k <= nFact; ++k ){
   for( let i = n+1; i < 2*nFact; ++i )
     permutations[k-1].push( i );
 
   grid.setOrder( k, nFact+1-k, new totalOrder( permutations[k-1] ) );
-}
+}*/
+
+let xs = [3,2,1];
+
+for( let k = 4; k < 2*nFact; ++k )
+  xs.push( k );
+
+grid.setOrder( 1, 1, new totalOrder( xs ) );
 
 if( !grid.contractionPropertyCheck() )
   console.error( "Invalid Initial total orders" );

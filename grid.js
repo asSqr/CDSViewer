@@ -77,7 +77,7 @@ class grid {
       let ord = this.getOrder( ci, cj ).p.filter( v => ci+cj <= v && v < gi+gj );
       let horizontalFlags = {};
 
-      ord.forEach( (v, i) => horizontalFlags[v] = (i < ci+cj+gj-cj) );
+      ord.forEach( (v, i) => horizontalFlags[v] = (i < gj-cj) );
 
       let cnt = 0;
 
