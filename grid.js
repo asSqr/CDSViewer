@@ -463,9 +463,9 @@ class grid {
 
                   const a = plOrder.ip[lambda]+sign*base-k;
 
-                  //if( a <= 0 ) {
-                    //logError( `Count Test Log: lambda: ${lambda}, a: ${a}, pl: ${JSON.stringify(pl)}, plOrder.p: ${JSON.stringify(plOrder.p)}, base: ${base}, sign: ${sign}, pj: ${JSON.stringify(pj)}, pj.order.p: ${JSON.stringify(pj.order.p)}, D: ${toList(D)}, k: ${k}, beta: ${JSON.stringify(beta[idx])}, L: ${toList(L)}` );
-                  //}
+                  if( a <= 0 ) {
+                    logError( `Count Test Log: lambda: ${lambda}, a: ${a}, pl: ${JSON.stringify(pl)}, plOrder.p: ${JSON.stringify(plOrder.p)}, base: ${base}, sign: ${sign}, pj: ${JSON.stringify(pj)}, pj.order.p: ${JSON.stringify(pj.order.p)}, D: ${toList(D)}, k: ${k}, beta: ${JSON.stringify(beta[idx])}, L: ${toList(L)}` );
+                  }
 
                   const ps = this.P.filter( p => {
                     const base = p.j > pj.j ? p.j-pj.j : pj.j-p.j;
@@ -474,7 +474,7 @@ class grid {
                     pOrder.buildIp();
 
                     if( pOrder.p.filter( v => v == lambda ).length == 0 )
-                      return true;
+                      return false;
 
                     let idx = pOrder.ip[lambda]+(p.j > pj.j ? 1 : -1)*base;
 
@@ -505,8 +505,8 @@ class grid {
 
                   //logError( `Count Test Log: Dk: ${toList(Dk)}, a: ${a}, size: ${Dk.size}` );
 
-                  if( plOrder.p.filter( v => v == lambda ).length > 0 && !Dk.has( lambda ) ) {
-                    //logError( `Count Test Log: lambda has not passed the count test. lambda: ${lambda}, a: ${a}, pl: ${JSON.stringify(pl)}, plOrder.p: ${JSON.stringify(plOrder.p)}, base: ${base}, sign: ${sign}, pj: ${JSON.stringify(pj)}, pj.order.p: ${JSON.stringify(pj.order.p)}, D: ${toList(D)}, k: ${k}, beta: ${JSON.stringify(beta[idx])}, L: ${toList(L)}, Dk: ${toList(Dk)}, ps: ${JSON.stringify(ps)}` );
+                  if( plOrder.p.filter( v => v == lambda ).length > 0 && D.has( lambda ) && !Dk.has( lambda ) ) {
+                    logError( `Count Test Log: lambda has not passed the count test. lambda: ${lambda}, a: ${a}, pl: ${JSON.stringify(pl)}, plOrder.p: ${JSON.stringify(plOrder.p)}, base: ${base}, sign: ${sign}, pj: ${JSON.stringify(pj)}, pj.order.p: ${JSON.stringify(pj.order.p)}, D: ${toList(D)}, k: ${k}, beta: ${JSON.stringify(beta[idx])}, L: ${toList(L)}, Dk: ${toList(Dk)}, ps: ${JSON.stringify(ps)}` );
                   }
 
                   return Dk.size <= a;
