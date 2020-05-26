@@ -23,7 +23,7 @@ for( let k = 1; k <= nFact; ++k ){
 }
 
 if( !grid.contractionPropertyCheck() )
-  console.error( "Invalid Initial total order" );
+  console.error( "Invalid Initial total orders" );
 
 /*let used = [];
 

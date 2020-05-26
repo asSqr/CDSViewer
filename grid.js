@@ -146,8 +146,8 @@ class grid {
 
     let layoutView = new Array(2).fill([]);
     
-    console.log( p );
-    console.log( q );
+    logInfo( p );
+    logInfo( q );
 
     const pOrder = p.order.filter( v => p.i+p.j <= v && v < this.width+this.height );
 
@@ -163,11 +163,11 @@ class grid {
     let contLines = [];
     let cnt = 0;
 
-    /*console.log( p );
-    console.log( q );
-    console.log( p.order );
-    console.log( qI );
-    console.log( base );*/
+    /*logInfo( p );
+    logInfo( q );
+    logInfo( p.order );
+    logInfo( qI );
+    logInfo( base );*/
 
     let len = pOrder.length();
 
@@ -177,22 +177,22 @@ class grid {
     for( let i = 1; i <= len+base; ++i ) {
       const k = i-base;
 
-      //console.error("Test");
+      //logError("Test");
 
       if( qOrderMap[pOrder.p[i]] )
         ++cnt;
 
-      /*console.error(k);
-      console.error(cnt);
-      console.error( qOrderMap );
-      console.error( pOrder );
-      console.error( pOrder.p[i] );
-      console.error( base );*/
+      /*logError(k);
+      logError(cnt);
+      logError( qOrderMap );
+      logError( pOrder );
+      logError( pOrder.p[i] );
+      logError( base );*/
 
       if( k == cnt ) {
         contLines.push( k );
-        /*console.error( "contLines" );
-        console.error( contLines );*/
+        /*logError( "contLines" );
+        logError( contLines );*/
       }
 
       if( i == p.length )
@@ -204,11 +204,11 @@ class grid {
 
     if( contLines.length == 0 )
     {
-      console.error( "Error!!! could not find contracting line." );
-      console.error( p );
-      console.error( p.order.p );
-      console.error( q );
-      console.error( q.order.p );
+      logError( "Error!!! could not find contracting line." );
+      logError( p );
+      logError( p.order.p );
+      logError( q );
+      logError( q.order.p );
     }
 
     return contLines;
@@ -222,10 +222,10 @@ class grid {
     {
       const conts = this.findContractingLine( ps[i], ps[j] );
 
-      /*console.error( "Comparing: " );
-      console.error( ps[i] );
-      console.error( ps[j] );
-      console.error( conts );*/
+      /*logError( "Comparing: " );
+      logError( ps[i] );
+      logError( ps[j] );
+      logError( conts );*/
 
       const base = ps[j].j-ps[i].j;
 
@@ -233,8 +233,8 @@ class grid {
         const psI = ps[i].order.filter( v => ps[i].i+ps[i].j <= v && v < this.width+this.height );
         const psJ = ps[j].order.filter( v => ps[j].i+ps[j].j <= v && v < this.width+this.height );
 
-        //console.error( psI );
-        //console.error( psJ );
+        //logError( psI );
+        //logError( psJ );
 
         const xs = psI.smaller( k+base ).filter( v => ps[j].i+ps[j].j <= v && v < this.width+this.height );
 
@@ -256,15 +256,15 @@ class grid {
 
   // Algorithm 3.1
   extendOrder() {
-    console.log(this);
+    logInfo(this);
 
-    for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) if( !this.used[i+","+j] ) {
+    for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) if( !this.used[i+","+j] ) {    
       const Mj = this.height+this.width-i-j;
       this.used[i+","+j] = true;
-      console.log(this.orders);
-      console.log( "i: "+i+" j: "+j );
-      console.log("Initialization");
-      console.log( this.getOrder(i,j) );
+      logInfo(this.orders);
+      logInfo( "i: "+i+" j: "+j );
+      logInfo("Initialization");
+      logInfo( this.getOrder(i,j) );
       let pj = { i: i, j: j, order: this.getOrder( i, j ) };
       let P1 = [];
       let P2 = [];
@@ -273,105 +273,124 @@ class grid {
         (this.pointCompare( p, pj ) ? P1 : P2).push( p );
       } );
 
-      console.log( "P1: " );
-      console.log( P1 );
-      console.log( "P2: " );
-      console.log( P2 );
+      logInfo( "P1: " );
+      logInfo( P1 );
+      logInfo( "P2: " );
+      logInfo( P2 );
 
       // alpha[i] = \alpha_{i, j}
       let alpha = new Array( P1.length + 10 );
 
       P1.forEach( ( pi, idx ) => {
-        alpha[idx] = this.findContractingLine( pi, pj );
+        const contLines = this.findContractingLine( pi, pj );
+        alpha[idx] = contLines[0];
       } );
 
       // beta[l] = \beta_{l, j}
-      let beta = (new Array( P2.length + 10 )).fill(1);
+      let beta = new Array( P2.length + 10 );
 
-      console.log("alpha");
-      console.log( alpha );
-      console.log( beta );
+      P2.forEach( ( pl, idx ) => {
+        beta[idx] = pl.j-pj.j+1;
+      } );
+
+      logInfo("alpha");
+      logInfo( alpha );
+      logInfo( beta );
 
       let D = new Set([]);
-      for( let k = i+j; k < this.height+this.width; ++k )
+      for( let k = pj.i+pj.j; k < this.height+this.width; ++k )
         D.add( k );
 
-      let L = new Set([]);
-      let LMap = {};
-
       for( let k = 1; k <= Mj; ++k ) {
+        let L = new Set([]);
+        let LMap = {};
+
         if( P1.length == 0 )
-          L = D;
+          L = D, logError(`Error!!! L is empty. whole D: ${toList(D)}`);
         else {
           P1.forEach( ( pi, idx ) => {
             const base = pj.j-pi.j;
             let equalList = -1;
+            const pIOrder = pi.order.filter( v => pj.i+pj.j <= v && v < this.height+this.width );
+
+            logInfo( `P1 loop: pi: ${JSON.stringify(pi)}, k: ${k}, alpha: ${alpha[idx]}, base: ${base}, pIOrder: ${JSON.stringify(pIOrder)}` );
 
             if( k <= alpha[idx] )
             {
-              console.log( "intersection" );
-              console.log(pi);
-              console.log(base);
-              console.log(pi.order.smaller(base+k).p);
-              console.log(D);
+              logInfo( "intersection" );
+              logInfo(pi);
+              logInfo(base);
+              logInfo(pIOrder.smaller(base+k).p);
+              logInfo(D);
 
-              LMap[idx] = D.intersection( new Set(pi.order.smaller(base+k)) );
+              const smallerList = pIOrder.smaller(base+k);
+
+              LMap[idx] = D.intersection( new Set(smallerList) );
+
+              if( smallerList.length == 0 ) {
+                logError( `Error!!! smallerList is empty. D: ${toList(D)}, smallerList: ${JSON.stringify(smallerList)}, base+k-1: ${base+k-1}, k: ${k}, pj: ${JSON.stringify(pj)}, pi.order: ${JSON.stringify(pi)}` );
+              }
 
               // subset property check
               for( let key in LMap ) {
                 if( !LMap[key].isSubset( LMap[idx] ) && !LMap[idx].isSubset( LMap[key] ) ) {
-                  console.error( "Error!!! Subset Property of Left Sets is violated." );
+                  logError( "Error!!! Subset Property of Left Sets is violated." );
                 }
               }
             }
             else if( k > alpha[idx] )
             {
-              console.log("equal");
-              console.log(pi);
-              console.log(base);
-              console.log(pi.order.equal(base+k));
-              console.log(D);
-              console.log(pj);
+              logInfo("equal");
+              logInfo(pi);
+              logInfo(base);
+              logInfo(pIOrder.equal(base+k));
+              logInfo(D);
+              logInfo(pj);
 
-              const largerList = pi.order.larger(base+k).filter( v => i+j <= v && v < this.height+this.width );
+              const largerList = pIOrder.larger(base+k);
+              const smallerList = pIOrder.smaller(base+k-1);
 
-              // Not Left Sets Property Check
-              if( D.eqSet( new Set(largerList) ) ) {
-                console.error( "Error!!! Property of Not Left Sets is violated." );
-                console.error( largerList );
-                console.error( D );
-                console.error( pj );
-                console.error( k );
-                console.error( pi.order );
+              if( largerList.length == 0 ) {
+                logError( `Error!!! largerList is empty. D: ${toList(D)}, smallerList: ${JSON.stringify(smallerList)}, largerSet: ${JSON.stringify(largerList)}, base+k-1: ${base+k-1}, k: ${k}, pj: ${JSON.stringify(pj)}, pi.order: ${JSON.stringify(pi)}` );
               }
-
-              if( D.has( pi.order.equal(base+k) ) )
-              {
-                LMap[idx] = new Set([pi.order.equal(base+k)]), console.log("in D");
-              
-                if( equalList == -1 )
-                  equalList = pi.order.equal(base+k);
-                else if( pi.order.equal(base+k) != equalList )
-                {
-                  // Equal List is same check.
-                  console.error( "Error!!! Equal List Property is violated." );
-                }
-              }
-              else {
-                console.log(pi);
-                LMap[idx] = D.intersection( new Set(largerList) ), console.log("not in D");
-              }
-
-              const smallerList = pi.order.smaller(base+k-1).filter( v => i+j <= v && v < this.height+this.width );
 
               // smallerList is already placed check
               if( D.intersection( new Set(smallerList) ).size != 0 ) {
-                console.error( "Error!!! smallerList violated." );
+                logError( `Error!!! smallerList violated. D: ${toList(D)}, smallerList: ${JSON.stringify(smallerList)}, largerSet: ${JSON.stringify(largerList)}, base+k-1: ${base+k-1}, k: ${k}, pj: ${JSON.stringify(pj)}, pi.order: ${JSON.stringify(pi)}` );
+              }
+
+              // Not Left Sets Property Check
+              if( D.eqSet( new Set(largerList) ) ) {
+                logError( "Error!!! Property of Not Left Sets is violated." );
+                logError( largerList );
+                logError( D );
+                logError( pj );
+                logError( k );
+                logError( pIOrder );
+              }
+
+              if( D.has( pIOrder.equal(base+k) ) )
+              {
+                LMap[idx] = new Set([pIOrder.equal(base+k)]), logInfo("in D");
+              
+                if( equalList == -1 )
+                  equalList = pIOrder.equal(base+k);
+                else if( pIOrder.equal(base+k) != equalList )
+                {
+                  // Equal List is same check.
+                  logError( "Error!!! Equal List Property is violated." );
+                }
+              }
+              else {
+                logInfo(pi);
+                LMap[idx] = D.intersection( new Set(largerList) ), logInfo("not in D");
               }
             }
           } );
 
           let fst = true;
+
+          logError(`Error!!! L is empty when pi finished. LMap: ${JSON.stringify(LMap)}`);
 
           for( let l in LMap )
           {
@@ -386,11 +405,10 @@ class grid {
           }
         }
 
-        console.log( "before L is: " );
-        console.log( L );
+        //logError( `Error!!! L is empty. before L is: ${toList(L)}` );
 
         if( L.size == 0 ) {
-          console.error( "Error!!! L is empty when pi finished." );
+          logError( `Error!!! L is empty when pi finished. D: ${toList(D)}, P1: ${JSON.stringify(P1)}` );
         }
         
         // line 18
@@ -398,20 +416,17 @@ class grid {
           if( k <= beta[idx] ) {
             const base = -(pl.j-pj.j);
 
-            const plOrder = pl.order.filter( v => pl.i+pl.j <= v && v < this.width+this.height );
+            let plOrder = pl.order/*.filter( v => pl.i+pl.j <= v && v < this.width+this.height )*/;
+            plOrder.buildIp();
+
+            //logError( pl );
+            //logError( plOrder );
+
+            //logError( `Error!!! L is empty. L is: ${toList(L)}` );
 
             if( plOrder.equal(base+k) && D.has( plOrder.equal(base+k) ) ) {
               if( L.size != 0 && !L.has( plOrder.equal(base+k) ) ) {
-                console.error( "Error!!! L is empty. pl non-emptiness violated." );
-                console.error( L );
-                console.error( beta[idx] );
-                console.error( plOrder.p );
-                console.error( pj.order.p );
-                console.error( "k: "+k );
-                console.error( D );
-                console.error( "base: "+base );
-                console.error( pl );
-                console.error( pj );
+                //logError( `Error!!! L is empty. pl non-emptiness violated. L: ${toList(L)}, beta: ${JSON.stringify(beta)}, plOrder.p: ${JSON.stringify(plOrder.p)}, pj.order.p: ${JSON.stringify(pj.order.p)}, k: ${k}, D: ${toList(D)}, base: ${base}, pl: ${JSON.stringify(pl)}, pj: ${JSON.stringify(pj)}` );
               }
 
               let nL = new Set([]);
@@ -420,22 +435,20 @@ class grid {
                 nL.add( l );
 
               L = nL;
-
-              console.log( "D has" );  
-              console.log(plOrder.equal(base+k));
-              console.log( "D is:" );
-              console.log(D);
             }
             else {
               let nL = new Set([]);
 
-              console.log("count test");
+              //logInfo("count test");
+
+              //logError( `Count Test Log: start L is ${toList(L)}` );
 
               for( let l of L )
               {
                 // the count test
                 if( (lambda => {
-                  const plOrder = pl.order.filter( v => pl.i+pl.j <= v && v < this.width+this.height );
+                  let plOrder = pl.order/*.filter( v => pl.i+pl.j <= v && v < this.width+this.height )*/;
+                  plOrder.buildIp();
 
                   if( plOrder.p.filter( v => v == lambda ).length == 0 )
                     return false;
@@ -445,47 +458,51 @@ class grid {
 
                   const a = plOrder.ip[lambda]+sign*base-k;
 
-                  if( a <= 0 ) {
-                    console.error( `count test: ${lambda}` );
-                    console.error( `a: ${a}` );
-                    console.error( pl );
-                    console.error( plOrder.p );
-                    console.error( base );
-                    console.error( sign );
-                    console.error( pj );
-                    console.error( pj.order.p );
-                    console.error( D );
-                    console.error( k );
-                    console.error( `beta[idx]: ${beta[idx]}` );
-                  }
+                  //if( a <= 0 ) {
+                    //logError( `Count Test Log: lambda: ${lambda}, a: ${a}, pl: ${JSON.stringify(pl)}, plOrder.p: ${JSON.stringify(plOrder.p)}, base: ${base}, sign: ${sign}, pj: ${JSON.stringify(pj)}, pj.order.p: ${JSON.stringify(pj.order.p)}, D: ${toList(D)}, k: ${k}, beta: ${JSON.stringify(beta[idx])}, L: ${toList(L)}` );
+                  //}
 
                   const ps = this.P.filter( p => {
                     const base = p.j > pj.j ? p.j-pj.j : pj.j-p.j;
 
-                    const pOrder = p.order.filter( v => p.i+p.j <= v && v < this.width+this.height );
+                    let pOrder = p.order/*.filter( v => p.i+p.j <= v && v < this.width+this.height )*/;
+                    pOrder.buildIp();
 
                     if( pOrder.p.filter( v => v == lambda ).length == 0 )
                       return false;
 
                     let idx = pOrder.ip[lambda]+(p.j > pj.j ? 1 : -1)*base;
 
-                    return k <= idx && idx < k+a;
+                    // TODO: k+a？
+                    return k <= idx;
                   } );
 
-                  //console.error(ps);
+                  //logError(ps);
+                  //logError(pj);
 
                   let Dk = new Set([]);
                   for( let d of D ) if( ps.every( p => {
                       const base = p.j > pj.j ? p.j-pj.j : pj.j-p.j;
                       const sign = (p.j > pj.j ? 1 : -1);
 
-                      const pOrder = p.order.filter( v => p.i+p.j <= v && v < this.width+this.height );
+                      let pOrder = p.order/*.filter( v => p.i+p.j <= v && v < this.width+this.height )*/;
+                      pOrder.buildIp();
 
-                      return k <= pOrder.ip[d]+sign*base && pOrder.ip[d]+sign*base <= k+a 
+                      //logError( pOrder );
+                      //logError( d );
+                      //logError( `k: ${k}, k+a: ${a}` );
+
+                      return k <= pOrder.ip[d]+sign*base && pOrder.ip[d]+sign*base <= k+a;
                     }) )
                     Dk.add( d );
 
-                  //console.error( Dk );
+                  //logError( Dk );
+
+                  //logError( `Count Test Log: Dk: ${toList(Dk)}, a: ${a}, size: ${Dk.size}` );
+
+                  if( plOrder.p.filter( v => v == lambda ).length > 0 && !Dk.has( lambda ) ) {
+                    //logError( `Count Test Log: lambda has not passed the count test. lambda: ${lambda}, a: ${a}, pl: ${JSON.stringify(pl)}, plOrder.p: ${JSON.stringify(plOrder.p)}, base: ${base}, sign: ${sign}, pj: ${JSON.stringify(pj)}, pj.order.p: ${JSON.stringify(pj.order.p)}, D: ${toList(D)}, k: ${k}, beta: ${JSON.stringify(beta[idx])}, L: ${toList(L)}, Dk: ${toList(Dk)}, ps: ${JSON.stringify(ps)}` );
+                  }
 
                   return Dk.size <= a;
                 })( l ) ) {
@@ -494,9 +511,10 @@ class grid {
               }
 
               if( nL.size == 0 ) {
-                console.error( "Error!!! nL is empty. [count test]");
-                console.error( L );
+                logError( `Count Test Log: Error!!! nL is empty. L: ${toList(L)}` );
               }
+
+              //logError( `Count Test Log: L is ${toList(L)}` );
 
               L = nL;
             }
@@ -505,17 +523,14 @@ class grid {
 
         let a;
 
-        console.log( "L is: " );
-        console.log( L );
-        console.log( "k is: ");
-        console.log( k );
+        logError( `final result: pj: ${JSON.stringify(pj)}, k: ${k}, L: ${toList(L)}` );
 
         if( L.size == 0 )
         {
-          console.error( "Error!! L is empty when pl finished." );
-          console.error( pj );
-          console.error( k );
-          console.error( beta );
+          logError( "Error!! L is empty when pl finished." );
+          logError( pj );
+          logError( k );
+          logError( beta );
         }
 
         for( let l of L )
@@ -523,42 +538,42 @@ class grid {
           pj.order.p[k] = l;
           a = l;
 
-          //console.error( "Delete from D: "+l );
+          //logError( "Delete from D: "+l );
 
           D.delete(l);
 
           break;
         }
 
-        console.log(`a is: ${a}`);
+        logInfo(`a is: ${a}`);
 
         // line 25
         P2.forEach( (pl, idx) => {
-          console.log( "pl order p" );
-          console.log( pl );
-          console.log(pl.order.p);
-          console.log(a in pl.order.p);
+          logInfo( "pl order p" );
+          logInfo( pl );
+          logInfo(pl.order.p);
+          logInfo(a in pl.order.p);
 
           if( pl.order.p.filter( v => v == a ).length > 0 && k <= beta[idx] ) {
             pl.order.buildIp();
             let x = pl.order.ip[a];
 
-            console.log( `x is: ${x}` );
-            console.log( pl.order.ip );
+            logInfo( `x is: ${x}` );
+            logInfo( pl.order.ip );
 
             if( x > beta[idx] ) {
               beta[idx] = x+1;
-              console.log( `beta: ${x+1}` );
+              logInfo( `beta: ${x+1}` );
             }
           }
         } );
 
-        console.log( "beta" );
-        console.log( beta );
+        logInfo( "beta" );
+        logInfo( beta );
       }
 
       this.getOrder( i, j ).buildIp();
-      //this.P.push( pj );
+      this.P.push( pj );
     }
   }
 }

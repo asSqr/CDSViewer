@@ -2,7 +2,6 @@ class totalOrder {
   // 1-indexed
   constructor( ps ) {
     if( ps.every( v => v == -1 ) ) {
-      console.error(ps);
       this.p = [null].concat(ps);
       this.ip = {};
 
@@ -78,7 +77,7 @@ function CorbettRotator( n )
     return xs;
   }
 
-  const rotate = (ys, N) => {
+  const rotate = ( ys, N ) => {
     let xs = [].concat(ys);
     const head = xs.shift();
 

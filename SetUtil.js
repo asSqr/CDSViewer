@@ -58,6 +58,15 @@ Set.prototype.eqSet = (bs) => {
     return true;
 }
 
+function toList( set ) {
+    let ret = [];
+
+    for( let v of set )
+        ret.push( v );
+
+    return ret;
+}
+
 function isArray (item) {
     return Object.prototype.toString.call(item) === '[object Array]';
 }
@@ -77,4 +86,16 @@ const deepClone = obj => {
         }
     }
     return r
+}
+
+let debug = true;
+
+const logInfo = (x) => {
+    if( debug )
+    console.log(x);
+}
+
+const logError = (x) => {
+    if( debug )
+    console.error(x);
 }
