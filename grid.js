@@ -74,10 +74,10 @@ class grid {
       let ci = this.endPoints[0].i, cj = this.endPoints[0].j;
       let gi = this.endPoints[1].i, gj = this.endPoints[1].j;
 
-      let ord = this.getOrder( ci, cj ).p/*.filter( v => ci+cj <= v && v < gi+gj )*/;
+      let ord = this.getOrder( ci, cj ).p.filter( v => ci+cj <= v && v < gi+gj );
       let horizontalFlags = {};
 
-      ord.forEach( (v, i) => horizontalFlags[v] = (i < gj-cj) );
+      ord.forEach( (v, i) => horizontalFlags[v] = (i < ci+cj+gj-cj) );
 
       let cnt = 0;
 
@@ -236,10 +236,11 @@ class grid {
         //logError( psI );
         //logError( psJ );
 
-        const xs = psI.smaller( k+base ).filter( v => ps[j].i+ps[j].j <= v && v < this.width+this.height );
-
-        return xs.every( x => {
-          const kPrime = psI.ip[x]-base;
+        return psI.p.every( x => {
+          if( !(x in psJ) )
+            return true;
+          
+          const kPrime = psI.ip[x]+base;
           const kPrime2 = psJ.ip[x];
 
           return kPrime2 <= k ? kPrime <= kPrime2 : kPrime >= kPrime2;
@@ -247,6 +248,8 @@ class grid {
       });
 
       if( !fl ) {
+        logError( `violated: ${JSON.stringify(ps[i])} and ${JSON.stringify(ps[j])}` );
+
         return false;
       }
     }
@@ -259,7 +262,7 @@ class grid {
     logInfo(this);
 
     for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) if( !this.used[i+","+j] ) {    
-      if( i == 2 && j == 1 )
+      if( i == 3 && j == 3 )
         debug = true;
       else
         debug = true;
@@ -431,7 +434,7 @@ class grid {
 
             if( plOrder.equal(base+k) && D.has( plOrder.equal(base+k) ) ) {
               if( L.size != 0 && !L.has( plOrder.equal(base+k) ) ) {
-                //logError( `Error!!! L is empty. pl non-emptiness violated. L: ${toList(L)}, beta: ${JSON.stringify(beta)}, plOrder.p: ${JSON.stringify(plOrder.p)}, pj.order.p: ${JSON.stringify(pj.order.p)}, k: ${k}, D: ${toList(D)}, base: ${base}, pl: ${JSON.stringify(pl)}, pj: ${JSON.stringify(pj)}` );
+                logError( `Error!!! L is empty. pl non-emptiness violated. L: ${toList(L)}, beta: ${JSON.stringify(beta)}, plOrder.p: ${JSON.stringify(plOrder.p)}, pj.order.p: ${JSON.stringify(pj.order.p)}, k: ${k}, D: ${toList(D)}, base: ${base}, pl: ${JSON.stringify(pl)}, pj: ${JSON.stringify(pj)}` );
               }
 
               let nL = new Set([]);
@@ -559,7 +562,7 @@ class grid {
           logInfo(pl.order.p);
           logInfo(a in pl.order.p);
 
-          if( pl.order.p.filter( v => v == a ).length > 0 && k <= beta[idx] ) {
+          if( pl.order.p.filter( v => v == a ).length > 0 && k < beta[idx] ) {
             pl.order.buildIp();
             let x = pl.order.ip[a];
 
@@ -579,6 +582,10 @@ class grid {
 
       this.getOrder( i, j ).buildIp();
       this.P.push( pj );
+    }
+
+    if( !this.contractionPropertyCheck() ) {
+      logError( "Error!!! Result does not satisfy the contraction properties." );
     }
   }
 }
