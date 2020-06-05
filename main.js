@@ -50,6 +50,8 @@ grid.setOrder( 1, 1, ord );*/
 else
   grid.extendOrder();
 
+console.log( new totalOrder( [0,1,3,5,6,8,2,4,7] ).twice(5) );
+
 document.onmousemove = event => {
   event = event || window.event;
   grid.setMousePos( event.clientX, event.clientY );

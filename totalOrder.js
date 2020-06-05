@@ -54,6 +54,52 @@ class totalOrder {
   length() {
     return this.p.length;
   }
+
+  twice( border ) {
+    const n = this.p.length-1;
+    let lists = {};
+
+    for( let i = 0; i <= n; ++i )
+      lists[i] = [];
+
+    this.buildIp();
+
+    let pair = {};
+
+    for( let i = 0; i < n; ++i ) {
+      const a = this.ip[i];
+      const b = this.ip[i+1];
+
+      if( a <= border && border < b ) {
+        console.log(i);
+
+        pair[i] = pair[i+1] = true;
+
+        lists[a] = lists[a].concat([2*i+1, 2*i+3]);
+        lists[b] = lists[b].concat([2*i, 2*i+2]);
+      }
+    }
+
+    for( let i = 0; i < n; ++i ) {
+      if( pair[i] == undefined ) {
+        let a = this.ip[i];
+        lists[a] = lists[a].concat([2*i, 2*i+1]);
+      }
+    }
+
+    console.log(lists);
+
+    let ps = [];
+
+    for( let i = 0; i <= n; ++i ) {
+      if( i in lists ) for( let v of lists[i] )
+        ps.push(v);
+    }
+
+    console.log(ps);
+
+    return new totalOrder(ps);
+  }
 }
 
 function CorbettRotator( n )
