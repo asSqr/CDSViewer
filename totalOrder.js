@@ -100,6 +100,68 @@ class totalOrder {
 
     return new totalOrder(ps);
   }
+
+  twice2() {
+    const n = this.p.length;
+
+    let constraints = [];
+
+    this.buildIp();
+
+    for( let border = 0; border < n; ++border ) {
+      let leftS = new Set([]);
+
+      for( let i = 0; i < n-1; ++i ) {
+        const a = this.ip[i];
+        const b = this.ip[i+1];
+
+        // right-up
+        if( a <= border && border < b ) {
+          leftS.add( 2*i );
+          leftS.add( 2*i+2 );
+          ++i;
+        }
+        // up-right
+        else if( b <= border && border < a ) {
+          leftS.add( 2*i+1 );
+          leftS.add( 2*i+3 );
+          ++i;
+        } else {
+          if( this.ip[i] <= border ) {
+            leftS.add( 2*i );
+            leftS.add( 2*i+1 );
+          }
+        }
+      }
+
+      constraints.push( { border: border, leftS: leftS } );
+    }
+
+    console.log( constraints );
+
+    let ps = new Array(n*2);
+
+    for( let i = 0; i < constraints.length-1; ++i ) {
+      if( constraints[i].leftS.size && !constraints[i].leftS.isSubset( constraints[i+1].leftS ) ) {
+        console.error( "[twice2] Subset Property violated." );
+        console.error( constraints[i].leftS );
+        console.error( constraints[i+1].leftS );
+
+        return;
+      }
+
+      let p = constraints[i].border*2;
+
+      for( let v of constraints[i+1].leftS.difference( constraints[i].leftS ) ) {
+        ps[p] = v;
+        ++p;
+      }
+    }
+
+    console.log( ps );
+
+    return new totalOrder(ps);
+  }
 }
 
 function CorbettRotator( n )
