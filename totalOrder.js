@@ -122,11 +122,11 @@ class totalOrder {
           ++i;
         }
         // up-right
-        else if( b <= border && border < a ) {
+        /*else if( b <= border && border < a ) {
           leftS.add( 2*i+1 );
           leftS.add( 2*i+3 );
           ++i;
-        } else {
+        }*/ else {
           if( this.ip[i] <= border ) {
             leftS.add( 2*i );
             leftS.add( 2*i+1 );
@@ -139,7 +139,7 @@ class totalOrder {
 
     console.log( constraints );
 
-    let ps = new Array(n*2);
+    let ps = new Array(n*2-2);
 
     for( let i = 0; i < constraints.length-1; ++i ) {
       if( constraints[i].leftS.size && !constraints[i].leftS.isSubset( constraints[i+1].leftS ) ) {
@@ -165,21 +165,21 @@ class totalOrder {
     return new totalOrder(ps);
   }
 
-  showSpanningTree( ctx, sx, sy, bstep = 1, step = 30 ) {
+  showSpanningTree( ctx, sx, sy, bstep = 1, step = 30, radius = 5 ) {
     const n = this.p.length;
 
-    for( let border = 0; border <= n; border += bstep ) {
+    for( let border = 0; border < n; border += bstep ) {
       let hor = {};
       
       for( let i = 0; i < border; ++i )
-        hor[this.p[i]] = true;
+        hor[this.p[i+1]] = true;
 
       let cx = sx, cy = sy;
 
       ctx.fillStyle = 'rgb(40,40,40)';
-      R.circle( ctx, sx, sy, 5, true );
+      R.circle( ctx, sx, sy, radius, true );
 
-      for( let i = 0; i < n; ++i ) {
+      for( let i = 0; i < n-1; ++i ) {
         let tx = cx, ty = cy;
         
         if( hor[i] ) {
@@ -190,7 +190,7 @@ class totalOrder {
 
         ctx.strokeStyle = 'rgb(40,40,40)';
         R.line( ctx, cx, cy, tx, ty );
-        R.circle( ctx, tx, ty, 5, true );
+        R.circle( ctx, tx, ty, radius, true );
 
         cx = tx;
         cy = ty;

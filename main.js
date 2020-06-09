@@ -52,7 +52,7 @@ else
 
 //console.log( new totalOrder( [0,1,3,5,6,8,2,4,7] ).twice(5) );
 
-let res = [];
+/*let res = [];
 
 for( let k = 1; k <= 7; ++k ) {
   let xs = [];
@@ -69,7 +69,7 @@ for( let k = 1; k <= 7; ++k ) {
 
     res.push( { fromOrd, toOrd } );
   }
-}
+}*/
 
 document.onmousemove = event => {
   event = event || window.event;
@@ -82,6 +82,18 @@ document.onmousedown = event => {
 
 let ptr = 10;
 
+let array = [];
+
+for( let i = 0; i < 40; ++i )
+  array.push( i );
+
+for(var i = array.length - 1; i > 0; i--){
+  var r = Math.floor(Math.random() * (i + 1));
+  var tmp = array[i];
+  array[i] = array[r];
+  array[r] = tmp;
+}
+
 function render()
 {
   let cvs = document.getElementById('canvas');
@@ -91,8 +103,23 @@ function render()
   const w = cvs.width, h = cvs.height;
   ctx.clearRect( 0, 0, w, h );
 
-  res[ptr].fromOrd.showSpanningTree( ctx, 40, h-500, 1, 30 );
-  res[ptr].toOrd.showSpanningTree( ctx, 40, h-40, 2, 30 );
+  const ord = new totalOrder( array );
+
+  const step = 16;
+
+  ord.showSpanningTree( ctx, 40, h-500, 1, step, 0 );
+
+  let [mord] = [...[ord]];
+  let q = 1;
+  const magnify = 2;
+
+  for( let k = 0; k < magnify; ++k )
+    mord = mord.twice2(), q *= 2;
+  
+  mord.showSpanningTree( ctx, 40, h-40, 2, step/q, 0 );
+
+  //res[ptr].fromOrd.showSpanningTree( ctx, 40, h-500, 1, 30 );
+  //res[ptr].toOrd.showSpanningTree( ctx, 40, h-40, 2, 30 );
 
   //new totalOrder( [0,1,3,5,6,8,2,4,7] ).showSpanningTree( ctx, 40, h-40, 20 );
 
