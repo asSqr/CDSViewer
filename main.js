@@ -48,9 +48,28 @@ let ord = new totalOrder( ps );
 
 grid.setOrder( 1, 1, ord );*/
 else
-  grid.extendOrder();
+  ;//grid.extendOrder();
 
-console.log( new totalOrder( [0,1,3,5,6,8,2,4,7] ).twice(5) );
+//console.log( new totalOrder( [0,1,3,5,6,8,2,4,7] ).twice(5) );
+
+let res = [];
+
+for( let k = 1; k <= 7; ++k ) {
+  let xs = [];
+
+  for( let i = 0; i < k; ++i )
+    xs.push( i );
+
+  const permutations = xs.permutation(k);
+
+  for( let p of permutations ) {
+    console.log(p);
+    let fromOrd = new totalOrder(p);
+    let toOrd = (new totalOrder(p)).twice2();
+
+    res.push( { fromOrd, toOrd } );
+  }
+}
 
 document.onmousemove = event => {
   event = event || window.event;
@@ -61,6 +80,8 @@ document.onmousedown = event => {
   grid.mouseButtonHandler();
 }
 
+let ptr = 10;
+
 function render()
 {
   let cvs = document.getElementById('canvas');
@@ -70,9 +91,14 @@ function render()
   const w = cvs.width, h = cvs.height;
   ctx.clearRect( 0, 0, w, h );
 
-  grid.render( ctx, w/2-(h-20)/2, 10, h-20, h-20 );
-  grid.renderCDS( ctx );
-  grid.keyHandler();
+  res[ptr].fromOrd.showSpanningTree( ctx, 40, h-500, 1, 30 );
+  res[ptr].toOrd.showSpanningTree( ctx, 40, h-40, 2, 30 );
+
+  //new totalOrder( [0,1,3,5,6,8,2,4,7] ).showSpanningTree( ctx, 40, h-40, 20 );
+
+  //grid.render( ctx, w/2-(h-20)/2, 10, h-20, h-20 );
+  //grid.renderCDS( ctx );
+  //grid.keyHandler();
 }
 
 setInterval( render, 1000/60 );

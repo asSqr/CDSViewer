@@ -146,6 +146,8 @@ class totalOrder {
         console.error( "[twice2] Subset Property violated." );
         console.error( constraints[i].leftS );
         console.error( constraints[i+1].leftS );
+        console.error( constraints[i].border );
+        console.error( constraints[i+1].border );
 
         return;
       }
@@ -161,6 +163,39 @@ class totalOrder {
     console.log( ps );
 
     return new totalOrder(ps);
+  }
+
+  showSpanningTree( ctx, sx, sy, bstep = 1, step = 30 ) {
+    const n = this.p.length;
+
+    for( let border = 0; border <= n; border += bstep ) {
+      let hor = {};
+      
+      for( let i = 0; i < border; ++i )
+        hor[this.p[i]] = true;
+
+      let cx = sx, cy = sy;
+
+      ctx.fillStyle = 'rgb(40,40,40)';
+      R.circle( ctx, sx, sy, 5, true );
+
+      for( let i = 0; i < n; ++i ) {
+        let tx = cx, ty = cy;
+        
+        if( hor[i] ) {
+          tx += step;
+        } else {
+          ty -= step;
+        }
+
+        ctx.strokeStyle = 'rgb(40,40,40)';
+        R.line( ctx, cx, cy, tx, ty );
+        R.circle( ctx, tx, ty, 5, true );
+
+        cx = tx;
+        cy = ty;
+      }
+    }
   }
 }
 
@@ -211,3 +246,31 @@ function CorbettRotator( n )
 
   return ps;
 }
+
+// JavaScript Array permutation generator
+// (optimized from CoffeeScript output: see ArrayPermutation.coffee)
+(function() {
+  var generatePermutation = function(perm, pre, post, n) {
+    var elem, i, rest, len;
+    if (n > 0)
+      for (i = 0, len = post.length; i < len; ++i) {
+        rest = post.slice(0);
+        elem = rest.splice(i, 1);
+        generatePermutation(perm, pre.concat(elem), rest, n - 1);
+      }
+    else
+      perm.push(pre);
+  };
+
+  /*
+  extend Array.prototype
+  e.g. [0, 1, 2].permutation(2)
+  => [[0, 1], [0, 2], [1, 0], [1, 2], [2, 0], [2, 1]]
+  */
+  Array.prototype.permutation = function(n) {
+    if (n == null) n = this.length;
+    var perm = [];
+    generatePermutation(perm, [], this, n);
+    return perm;
+  };
+})();
