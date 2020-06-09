@@ -84,7 +84,7 @@ let ptr = 10;
 
 let array = [];
 
-for( let i = 0; i < 40; ++i )
+for( let i = 0; i < 10; ++i )
   array.push( i );
 
 for(var i = array.length - 1; i > 0; i--){
@@ -105,13 +105,13 @@ function render()
 
   const ord = new totalOrder( array );
 
-  const step = 16;
+  const step = 32;
 
-  ord.showSpanningTree( ctx, 40, h-500, 1, step, 0 );
+  ord.showSpanningTree( ctx, 40, h-400, 1, step, 0 );
 
   let [mord] = [...[ord]];
   let q = 1;
-  const magnify = 2;
+  const magnify = 3;
 
   for( let k = 0; k < magnify; ++k )
     mord = mord.twice2(), q *= 2;
