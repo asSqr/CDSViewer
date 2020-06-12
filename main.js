@@ -80,11 +80,11 @@ document.onmousedown = event => {
   grid.mouseButtonHandler();
 }
 
-let ptr = 10;
+let ptr = 1000;
 
 let array = [];
 
-for( let i = 0; i < 10; ++i )
+for( let i = 0; i < 100; ++i )
   array.push( i );
 
 for(var i = array.length - 1; i > 0; i--){
@@ -105,7 +105,7 @@ function render()
 
   const ord = new totalOrder( array );
 
-  const step = 32;
+  const step = 8;
 
   ord.showSpanningTree( ctx, 40, h-400, 1, step, 0 );
 
@@ -116,7 +116,7 @@ function render()
   for( let k = 0; k < magnify; ++k )
     mord = mord.twice2(), q *= 2;
   
-  mord.showSpanningTree( ctx, 40, h-40, 2, step/q, 0 );
+  mord.showSpanningTree( ctx, 40, h-40, q, step/q, 0 );
 
   //res[ptr].fromOrd.showSpanningTree( ctx, 40, h-500, 1, 30 );
   //res[ptr].toOrd.showSpanningTree( ctx, 40, h-40, 2, 30 );

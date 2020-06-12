@@ -112,14 +112,47 @@ class totalOrder {
       let leftS = new Set([]);
 
       for( let i = 0; i < n-1; ++i ) {
-        const a = this.ip[i];
-        const b = this.ip[i+1];
+        let a = this.ip[i];
+        let b = this.ip[i+1];
 
         // right-up
         if( a <= border && border < b ) {
           leftS.add( 2*i );
           leftS.add( 2*i+2 );
           ++i;
+        }
+        /*let l = 0;
+
+        // right-up
+        while( i+l+1 < n && a <= border && border < b ) {
+          ++l;
+          
+          if( l&1 )
+            a = this.ip[i+l+1];
+          else
+            b = this.ip[i+l+1];
+        }
+
+        console.log( "border: ", border, "l: ", l );
+
+        if( l ) {
+          let acc = 0;
+          let y = Math.floor(l/2);
+          let x = l-y;
+          
+          let p = 2*i;
+
+          while( p < 2*l ) {
+            acc += y;
+
+            leftS.add( p );
+            ++p;
+
+            if( acc >= x ) {
+              acc -= x;
+              ++p;
+            }
+          }
         }
         // up-right
         /*else if( b <= border && border < a ) {
@@ -132,6 +165,8 @@ class totalOrder {
             leftS.add( 2*i+1 );
           }
         }
+
+        //i += l;
       }
 
       constraints.push( { border: border, leftS: leftS } );
