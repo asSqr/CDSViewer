@@ -15,5 +15,8 @@ const R = {
       ctx.fill();
     else
       ctx.stroke();
+  },
+  string: ( ctx, x, y, str ) => {
+    ctx.fillText( str, x, y );
   }
 };

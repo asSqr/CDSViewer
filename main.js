@@ -61,7 +61,8 @@ else
   ;//grid.extendOrder();
 
 let sigma = [];
-let e = 5;
+const e = 3;
+const base = 3;
 
 for( let i = 0; i < 2; ++i )
   sigma.push(2-1-i);
@@ -71,7 +72,7 @@ let per = [];
 for( let i = 0; i < e+1; ++ i )
   per.push([].concat(sigma));
 
-let ps = generateVDC( 2, e, per );
+let ps = generateVDC( base, e/*, per*/ );
 console.log("ps: ", ps);
 //let ps = [0,4,2,6,1,5,3,7];
 
@@ -136,7 +137,7 @@ function render()
 
   const step = 30;
 
-  ord.showSpanningTree( ctx, 40, h-40, 1, step, 0 );
+  ord.showSpanningTree( ctx, 40, h-40, 1, step, 0, true, base );
 
   /*let [mord] = [...[ord]];
   let q = 1;

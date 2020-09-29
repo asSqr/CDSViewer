@@ -210,7 +210,7 @@ class totalOrder {
     return new totalOrder(ps);
   }
 
-  showSpanningTree( ctx, sx, sy, bstep = 1, step = 30, radius = 5 ) {
+  showSpanningTree( ctx, sx, sy, bstep = 1, step = 30, radius = 5, applyLinearMap = false, base = 2 ) {
     const n = this.p.length;
 
     for( let border = 0; border < n; border += bstep ) {
@@ -231,6 +231,10 @@ class totalOrder {
           tx += step;
         } else {
           ty -= step;
+
+          if( applyLinearMap ) {
+            tx += step;
+          }
         }
 
         ctx.strokeStyle = 'rgb(40,40,40)';
@@ -239,6 +243,23 @@ class totalOrder {
 
         cx = tx;
         cy = ty;
+      }
+    }
+
+    if( applyLinearMap ) {
+      let x = sx;
+
+      for( let i = 0; i < n; ++i ) {
+        ctx.strokeStyle = 'rgb(40, 40, 40, 0.2)';
+        R.line( ctx, x, sy+step, x, sy-step*n );
+        R.string( ctx, x+5, sy+step, i );
+
+        x += step;
+      }
+
+      for( let i = 1; i < base; ++i ) {
+        ctx.strokeStyle = 'rgb(255,0,0)';
+        R.line( ctx, sx, sy, sx+step*n, sy-step/base*n*i );
       }
     }
   }
