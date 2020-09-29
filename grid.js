@@ -116,6 +116,84 @@ class grid {
     }
   }
 
+  nearestPoint2Line( x, y, a, b, c ) {
+    const d = Math.abs(a*x+b*y+c)/Math.sqrt(a*a+b*b);
+
+    let dx = a/Math.sqrt(a*a+b*b), dy = b/Math.sqrt(a*a+b*b);
+
+    let nx = x+d*dx;
+    let ny = y+d*dy;
+
+    if( Math.abs(a*nx+b*ny+c) < 1e-2 ) {
+      return {x: nx, y: ny};
+    }
+
+    return { x: x-d*dx, y: y-d*dy };
+  }
+
+  totalHausdorff() {
+    let ans = 0;
+
+    for( let i = 1; i <= this.height; ++i ) for( let j = 1; j <= this.width; ++j ) for( let i2 = 1; i2 <= i; ++i2 ) for( let j2 = 1; j2 <= j; ++j2 ) if( i != i2 || j != j2 )
+      ans = Math.max( ans, this.calcHaussdorff( { i: i2, j: j2 }, { i: i, j: j } ) );
+  
+    return ans;
+  }
+
+  rayHausdorff( p ) {
+    let ans = 0;
+
+    for( let i = p.i; i <= this.height; ++i ) for( let j = p.j; j <= this.width; ++j ) if( i != p.i || j != p.j )
+      ans = Math.max( ans, this.calcHaussdorff( { i: p.i, j: p.j }, { i: i, j: j } ) );
+  
+    return ans;
+  }
+
+  calcHaussdorff( p, q ) {
+    const a = -(q.j-p.j);
+    const b = q.i-p.i;
+    const c = -(a*p.i+b*p.j);
+    let ci = p.i, cj = p.j;
+    let gi = q.i, gj = q.j;
+    let ord = this.getOrder( ci, cj ).p.filter( v => ci+cj <= v && v < gi+gj );
+    let horizontalFlags = {};
+
+    ord.forEach( (v, i) => horizontalFlags[v] = (i < gj-cj) );
+
+    let cnt = 0;
+    let ans = 0;
+
+    let { x, y } = this.nearestPoint2Line( ci, cj, a, b, c );
+    //console.log(x, y, a, b, c, a*x+b*y+c);
+    ans = Math.max( ans, Math.abs(ci-x)+Math.abs(cj-y) );
+
+    while( ci != gi && cj != gj ) {
+      let ni, nj;
+
+      if( horizontalFlags[ci+cj] ) {
+        ni = ci, nj = cj+1;
+      }
+      else {
+        ni = ci+1, nj = cj;
+      }
+
+      let { x, y } = this.nearestPoint2Line( ni, nj, a, b, c );
+      //console.log(x, y, a, b, c, a*x+b*y+c);
+      if( !isNaN(x) && !isNaN(y) )
+      ans = Math.max( ans, Math.abs(ni-x)+Math.abs(nj-y) );
+
+      ci = ni;
+      cj = nj;
+
+      ++cnt;
+
+      if( cnt >= 50 )
+        break;
+    }
+
+    return ans;
+  }
+
   keyHandler() {
     
   }

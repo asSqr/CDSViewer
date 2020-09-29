@@ -5,7 +5,7 @@ document.onkeydown = event => {
     fl ^= true;
 }
 
-const n = 3;
+const n = 4;
 let nFact = 1;
 
 for( let i = 1; i <= n; ++i )
@@ -13,21 +13,31 @@ for( let i = 1; i <= n; ++i )
 
 grid = new grid( nFact, nFact );
 
-const permutations = CorbettRotator(n);
+let xs = [];
 
-/*for( let k = 1; k <= nFact; ++k ){
+for( let i = 1; i <= n; ++i )
+  xs.push( i );
+
+const permutations = xs.permutation(n);
+
+//const permutations = CorbettRotator(n);
+
+for( let k = 1; k <= nFact; ++k ){
   for( let i = n+1; i < 2*nFact; ++i )
     permutations[k-1].push( i );
 
-  grid.setOrder( k, nFact+1-k, new totalOrder( permutations[k-1] ) );
-}*/
+  //grid.setOrder( k, nFact+1-k, new totalOrder( permutations[k-1] ) );
+  grid.setOrder( 1, 1, new totalOrder( permutations[k-1] ) );
+  console.log(grid.rayHausdorff( { i: 1, j: 1 } ));
+}
 
+/*
 let xs = [3,2,1];
 
 for( let k = 4; k < 2*nFact; ++k )
   xs.push( k );
 
-grid.setOrder( 1, 1, new totalOrder( xs ) );
+grid.setOrder( 1, 1, new totalOrder( xs ) );*/
 
 if( !grid.contractionPropertyCheck() )
   console.error( "Invalid Initial total orders" );
@@ -49,6 +59,25 @@ let ord = new totalOrder( ps );
 grid.setOrder( 1, 1, ord );*/
 else
   ;//grid.extendOrder();
+
+let sigma = [];
+let e = 5;
+
+for( let i = 0; i < 2; ++i )
+  sigma.push(2-1-i);
+
+let per = [];
+
+for( let i = 0; i < e+1; ++ i )
+  per.push([].concat(sigma));
+
+let ps = generateVDC( 2, e, per );
+console.log("ps: ", ps);
+//let ps = [0,4,2,6,1,5,3,7];
+
+let ord = (new totalOrder( ps )).inv();
+
+console.log(ord);
 
 //console.log( new totalOrder( [0,1,3,5,6,8,2,4,7] ).twice(5) );
 
@@ -103,20 +132,20 @@ function render()
   const w = cvs.width, h = cvs.height;
   ctx.clearRect( 0, 0, w, h );
 
-  const ord = new totalOrder( array );
+  //const ord = new totalOrder( array );
 
-  const step = 8;
+  const step = 30;
 
-  ord.showSpanningTree( ctx, 40, h-400, 1, step, 0 );
+  ord.showSpanningTree( ctx, 40, h-40, 1, step, 0 );
 
-  let [mord] = [...[ord]];
+  /*let [mord] = [...[ord]];
   let q = 1;
   const magnify = 3;
 
   for( let k = 0; k < magnify; ++k )
     mord = mord.twice2(), q *= 2;
   
-  mord.showSpanningTree( ctx, 40, h-40, q, step/q, 0 );
+  mord.showSpanningTree( ctx, 40, h-40, q, step/q, 0 );*/
 
   //res[ptr].fromOrd.showSpanningTree( ctx, 40, h-500, 1, 30 );
   //res[ptr].toOrd.showSpanningTree( ctx, 40, h-40, 2, 30 );
@@ -125,7 +154,7 @@ function render()
 
   //grid.render( ctx, w/2-(h-20)/2, 10, h-20, h-20 );
   //grid.renderCDS( ctx );
-  //grid.keyHandler();
+  grid.keyHandler();
 }
 
 setInterval( render, 1000/60 );

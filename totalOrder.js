@@ -27,6 +27,16 @@ class totalOrder {
     } );
   }
 
+  inv() {
+    let nps = new Array(this.p.length-1);
+
+    for( let i = 1; i < this.p.length; ++i ) {
+      nps[this.p[i]] = i-1;
+    }
+
+    return new totalOrder(nps);
+  }
+
   filter( pred ) {
     let nps = [];
 
