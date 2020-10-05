@@ -44,7 +44,7 @@ const dP = ( Sigma, b ) => N => {
   let x = N;
   let ret = 0;
 
-  for( let j = 1; j < 100; ++j ) {
+  for( let j = 1; j <= Sigma.length; ++j ) {
     x /= b;
     ret += psiP( b, Sigma[j-1] )(x);
   }
@@ -56,7 +56,7 @@ const dM = ( Sigma, b ) => N => {
   let x = N;
   let ret = 0;
 
-  for( let j = 1; j < 100; ++j ) {
+  for( let j = 1; j <= Sigma.length; ++j ) {
     x /= b;
     ret += psiM( b, Sigma[j-1] )(x);
   }
@@ -65,5 +65,9 @@ const dM = ( Sigma, b ) => N => {
 }
 
 const dStar = ( Sigma, b ) => N => {
-  return Math.max( dP(Sigma,b)(N), dN(Sigma,b)(N) );
+  return Math.max( dP(Sigma,b)(N), dM(Sigma,b)(N) );
+}
+
+const omega = ( b ) => {
+
 }
