@@ -1,4 +1,5 @@
 const phi = h => ( b, sigma ) => x => {
+  x -= Math.floor(x);
   const k = Math.floor(x*b)%b+1;
 
   let ret = 0;
