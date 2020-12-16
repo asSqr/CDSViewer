@@ -69,7 +69,7 @@ def DStarP(n,b,sigma):
     dr *= b
 
   for k in range(length):
-    print("coef: {}, dr: {}".format(coef, dr))
+    #print("coef: {}, dr: {}".format(coef, dr))
     ret -= coef*sigma[(baseIdx+k)%length][0]*dr/(dr-1)
 
     coef /= b
@@ -207,6 +207,38 @@ def generateVDC( b, n, per = [] ):
 
   return ret
 
+A = []
+
+for h in range(1,1000):
+  for i in range(h*(h-1)+1, h*h+1):
+    A.append(i)
+
+def composePerm(tau, sigma, b):
+  ret = []
+
+  for i in range(b):
+    ret.append(tau[sigma[i]])
+
+  return ret
+
+def sigmaA(sigma,b):
+  tau = []
+  for k in range(b):
+    tau.append(b-k-1)
+
+  ret = []
+
+  for j in range(b):
+    if j in A:
+      ret.append(sigma)
+    else:
+      ret.append(composePerm(tau, sigma, b))
+
+  return ret
+
+sigma60 = [0,15,30,40,2,48,20,35,8,52,23,43,12,26,55,4,32,45,17,37,6,50,28,10,57,21,41,13,33,54,1,25,46,18,38,5,49,29,9,58,22,42,14,34,53,3,27,47,16,36,7,51,19,44,31,11,56,24,39,59]
+sigma60As = sigmaA(sigma60,60)
+
 w = omega(9)
 ws = [w]
 ids = [[0,1]]
@@ -214,7 +246,7 @@ ids = [[0,1]]
 n = 10000
 
 ma2 = 0
-ma9 = 0
+ma = 0
 
 twos = []
 ds = []
@@ -222,22 +254,23 @@ xs = []
 
 for i in range(2,n):
   s2d = DStar(i, 2, ids)
-  s9d = DStar(i, 9, ws)
-  print("s2d: {}, s9d: {}".format(s2d, s9d))
+  #s9d = DStar(i, 9, ws)
+  opt = DStar(i, 60, sigma60As)
+  print("s2d: {}, opt: {}".format(s2d, opt))
   s2d /= math.log(i)
-  s9d /= math.log(i)
+  opt /= math.log(i)
   print(s2d)
-  print(s9d)
+  print(opt)
 
   xs.append(i)
   twos.append(s2d)
-  ds.append(s9d)
+  ds.append(opt)
 
   ma2 = max( ma2, s2d )
-  ma9 = max( ma9, s9d )
+  ma = max( ma, opt )
 
 print(ma2)
-print(ma9)
+print(ma)
 
 plt.plot(xs,twos)
 plt.plot(xs,ds)

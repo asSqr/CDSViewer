@@ -28,7 +28,7 @@ for( let k = 1; k <= nFact; ++k ){
 
   //grid.setOrder( k, nFact+1-k, new totalOrder( permutations[k-1] ) );
   grid.setOrder( 1, 1, new totalOrder( permutations[k-1] ) );
-  console.log(grid.rayHausdorff( { i: 1, j: 1 } ));
+  //console.log(grid.rayHausdorff( { i: 1, j: 1 } ));
 }
 
 /*
@@ -61,7 +61,7 @@ else
   ;//grid.extendOrder();
 
 let sigma = [];
-const e = 4;
+const e = 2;
 const base = 2;
 
 //for( let i = 0; i < 2; ++i )
@@ -74,12 +74,12 @@ let per = [];
   //per.push([].concat([2,0,1]));
 
 let ps = generateVDC( base, e/*, per*/ );
-console.log("ps: ", ps);
+//console.log("ps: ", ps);
 //let ps = [0,4,2,6,1,5,3,7];
 
 let ord = (new totalOrder( ps )).inv();
 
-console.log(ord);
+//console.log(ord);
 
 //console.log( new totalOrder( [0,1,3,5,6,8,2,4,7] ).twice(5) );
 
@@ -132,13 +132,17 @@ function render()
   let ctx = cvs.getContext('2d');
 
   const w = cvs.width, h = cvs.height;
-  ctx.clearRect( 0, 0, w, h );
+  ctx.fillStyle = '#fafafa';
+  ctx.fillRect( 0, 0, w, h );
 
   //const ord = new totalOrder( array );
 
-  const step = 30;
+  const step = 150;
 
-  ord.showSpanningTree( ctx, 40, h-40, 1, step, 0, false );
+  renderCurve(ctx, h);
+
+  //ord.showSpanningTree( ctx, 40, h-40, 1, step, 5, true, true );
+  //drawSpanningTreeFromList( vs, ctx, 40, h-40, 1, step, 5, true );
 
   /*let [mord] = [...[ord]];
   let q = 1;

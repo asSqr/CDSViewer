@@ -81,7 +81,7 @@ class totalOrder {
       const b = this.ip[i+1];
 
       if( a <= border && border < b ) {
-        console.log(i);
+        //console.log(i);
 
         pair[i] = pair[i+1] = true;
 
@@ -97,7 +97,7 @@ class totalOrder {
       }
     }
 
-    console.log(lists);
+    //console.log(lists);
 
     let ps = [];
 
@@ -106,7 +106,7 @@ class totalOrder {
         ps.push(v);
     }
 
-    console.log(ps);
+    //console.log(ps);
 
     return new totalOrder(ps);
   }
@@ -182,7 +182,7 @@ class totalOrder {
       constraints.push( { border: border, leftS: leftS } );
     }
 
-    console.log( constraints );
+    //console.log( constraints );
 
     let ps = new Array(n*2-2);
 
@@ -205,13 +205,17 @@ class totalOrder {
       }
     }
 
-    console.log( ps );
+    //console.log( ps );
 
     return new totalOrder(ps);
   }
 
-  showSpanningTree( ctx, sx, sy, bstep = 1, step = 30, radius = 5, showRedLine = false, applyLinearMap = false, base = 2 ) {
+  showSpanningTree( ctx, sx, sy, bstep = 1, step = 30, radius = 5, showLine = false, stressSplit = false, showRedLine = false, applyLinearMap = false, base = 2 ) {
     const n = this.p.length;
+
+    let memObj = {};
+
+    ctx.lineWidth = 3;
 
     for( let border = 0; border < n; border += bstep ) {
       let hor = {};
@@ -226,6 +230,15 @@ class totalOrder {
 
       for( let i = 0; i < n-1; ++i ) {
         let tx = cx, ty = cy;
+
+        const j = (tx-sx)/step;
+        const key = i+" "+j;
+
+        if( !memObj[key] ) {
+          memObj[key] = {};
+        }
+
+        memObj[key][hor[i] ? 'hor' : 'ver'] = true;
         
         if( hor[i] ) {
           tx += step;
@@ -237,8 +250,15 @@ class totalOrder {
           }
         }
 
-        ctx.strokeStyle = 'rgb(40,40,40)';
+        ctx.strokeStyle = ctx.fillStyle = 'rgb(40,40,40)';
+
+        //if( stressSplit && i == n-3 )
+          //ctx.strokeStyle = ctx.fillStyle = 'rgb(240,200,0)';
+
         R.line( ctx, cx, cy, tx, ty );
+        
+        ctx.strokeStyle = ctx.fillStyle = 'rgb(40,40,40)';
+        
         R.circle( ctx, tx, ty, radius, true );
 
         cx = tx;
@@ -261,10 +281,30 @@ class totalOrder {
         ctx.strokeStyle = 'rgb(255,0,0)';
         R.line( ctx, sx, sy, sx+step*n, sy-step/base*n*i );
       }
-    } else if( showLine ) {
+    } else if( showRedLine ) {
       for( let i = 0; i <= n; ++i ) {
         ctx.strokeStyle = 'rgb(255,0,0)';
         R.line( ctx, sx, sy, sx+step*(n-i), sy-step*i );
+      }
+    } else if( showLine ) {
+      for( let i = 0; i < n-1; ++i ) {
+        ctx.strokeStyle = 'rgb(40,40,40)';
+        R.line( ctx, sx+step*i, sy, sx, sy-step*i );
+      }
+    }
+
+    //console.log(memObj);
+
+    if( stressSplit ) {
+      for( let i = 0; i < n-1; ++i ) {
+        for( let j = 0; j <= i; ++j ) {
+          const key = i+" "+j;
+
+          if( memObj[key]['hor'] && memObj[key]['ver'] ) {
+            ctx.strokeStyle = ctx.fillStyle = 'rgb(240,200,0)';
+            R.circle( ctx, sx+step*j, sy-step*(i-j), radius*1.2, true );
+          }
+        }
       }
     }
   }
@@ -345,3 +385,80 @@ function CorbettRotator( n )
     return perm;
   };
 })();
+
+const sz = 4;
+let vs = [];
+
+for( let i = 0; i < sz; ++i ) {
+  vs.push((new Array(i+1)).fill([]));
+}
+
+// F weak CDR
+vs[0][0] = [0,1];
+vs[0][1] = [0,1];
+vs[1][0] = [0];
+vs[2][0] = [0];
+vs[1][1] = [0,1];
+vs[0][2] = [1];
+vs[3][0] = [0,1];
+vs[2][1] = [1];
+vs[1][2] = [];
+vs[0][3] = [0,1];
+
+let stressPath = [
+  { i: 0, j: 0, d: 1 },
+  { i: 0, j: 1, d: 1 },
+  { i: 0, j: 2, d: 1 },
+  { i: 0, j: 3, d: 0 }
+];
+
+function drawSpanningTreeFromList(vs, ctx, sx, sy, bstep = 1, step = 30, radius = 5, stress = false) {
+  ctx.lineWidth = 3;
+
+  for( let i = 0; i < sz; ++i ) {
+    ctx.strokeStyle = 'rgb(40,40,40)';
+    R.line( ctx, sx+i*step, sy, sx, sy-i*step );
+  }
+
+  for( let i = 0; i <= sz; ++i ) for( let j = 0; j <= sz; ++j ) {
+    if( i+j > sz )
+      continue;
+
+    const cx = sx+step*j;
+    const cy = sy-step*i;
+    let col = 'rgb(40,40,40)';
+
+    if( i+j < sz ) {
+      const len = vs[i][j].length;
+
+      if( !len || len == 2 )
+        col = len ? 'rgb(0,0,255)' : 'rgb(255,0,0)';
+
+      ctx.strokeStyle = 'rgb(40,40,40)';
+      
+      for( let k = 0; k < len; ++k ) {
+        let tx, ty;
+
+        if( !vs[i][j][k] )
+          tx = cx, ty = cy-step;
+        else
+          tx = cx+step, ty = cy;
+        
+        if( stress ) for( let stress of stressPath ) {
+          if( stress.i == i && stress.j == j && stress.d == vs[i][j][k] ) {
+            ctx.strokeStyle = 'rgb(240,200,0)';
+            break;
+          } else {
+            ctx.strokeStyle = 'rgb(40,40,40)';
+          }
+        }
+
+        R.line( ctx, cx, cy, tx, ty );
+      }
+    }
+
+    ctx.strokeStyle = col;
+    ctx.fillStyle = col;
+    R.circle( ctx, cx, cy, radius, true );
+  }
+}
