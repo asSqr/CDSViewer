@@ -7,11 +7,17 @@ const gInv = gInvPara;
 
 let C = {};
 
-C.base = 2;
-C.exp = 7;
+// Hausdorff: 1.8069104476659028
+C.base = 60;
+C.exp = 1;
+
+// Hausdorff: 1.9090909090909136
+//C.base = 2;
+//C.exp = 6;
 C.size = Math.pow(C.base, C.exp);
 
-C.V = generateVDC(C.base, C.exp);
+//C.V = generateVDC(C.base, C.exp);
+C.V = generateVDC(C.base, C.exp, sigma60As);
 
 C.cOrd = [];
 
